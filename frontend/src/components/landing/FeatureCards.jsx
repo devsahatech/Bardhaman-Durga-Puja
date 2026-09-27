@@ -74,7 +74,7 @@ export default function FeatureCards() {
                 <div className="bg-white p-4 sm:p-5 md:p-6 rounded-2xl border border-[#F0EAE1] shadow-[0_4px_20px_-2px_rgba(139,30,63,0.05),0_1px_3px_rgba(0,0,0,0.03)] card-hover-lift hover:border-[#80132F]/20 hover:shadow-md transition-all duration-300 flex flex-row items-start gap-3.5 sm:gap-4 md:gap-5 h-full">
                   {/* Pale circular icon container with responsive scaling */}
                   <div className="w-13 h-13 sm:w-15 sm:h-15 md:w-17 md:h-17 w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] md:w-[68px] md:h-[68px] rounded-full bg-[#FAF0E6] border border-[#F3E5D4] flex items-center justify-center shrink-0 mt-0.5">
-                    <IconComp className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10" />
+                    <IconComp className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#80132F]" />
                   </div>
                   {/* Card Content with ample reading room */}
                   <div className="flex-1 min-w-0">
