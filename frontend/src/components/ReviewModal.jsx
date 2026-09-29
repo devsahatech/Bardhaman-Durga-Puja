@@ -81,7 +81,7 @@ export default function ReviewModal({ pandalId, pandalName, onClose }) {
               disabled={isSubmitting || !comment.trim()}
               className="w-full py-3 bg-red-700 hover:bg-red-800 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2"
             >
-              {isSubmitting ? 'সাবমিট হচ্ছে...' : (
+              {isSubmitting ? t('review_submitting') : (
                 <>
                   <Send className="w-4 h-4" /> সাবমিট করুন
                 </>

@@ -11,6 +11,8 @@ import { useVoice } from './useVoice';
 const ARRIVAL_RADIUS_METERS = 35;
 
 export function useLiveNavigator(optimizedRoute, lang, t) {
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [currentStopIndex, setCurrentStopIndex] = useState(0);
   const { position: userLocation } = useGeolocation({ mode: 'watch' });
@@ -133,9 +135,9 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
   };
 
   const getPandalName = useCallback((pandal) => {
-    if (!pandal) return 'মণ্ডপ';
-    if (lang === 'en') return pandal.name_en || pandal.name || 'মণ্ডপ';
-    return pandal.name_bn || pandal.name || pandal.name_en || 'মণ্ডপ';
+    if (!pandal) return tRef.current('hud_generic_pandal');
+    if (lang === 'en') return pandal.name_en || pandal.name || tRef.current('hud_generic_pandal');
+    return pandal.name_bn || pandal.name || pandal.name_en || tRef.current('hud_generic_pandal');
   }, [lang]);
 
   const sanitizeName = useCallback((p) => {
@@ -143,8 +145,8 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
     // Remove test prefix and pure digits, keep bengali words
     name = name.replace(/^Test\s*[\d.]+/i, '');
     name = name.replace(/^[A-Z\d-]+\s*/i, '');
-    if (/^[\d.\s]+$/.test(name)) return 'মণ্ডপ';
-    return name.trim() || 'মণ্ডপ';
+    if (/^[\d.\s]+$/.test(name)) return tRef.current('hud_generic_pandal');
+    return name.trim() || tRef.current('hud_generic_pandal');
   }, [getPandalName]);
 
   const skipToNext = () => {
@@ -243,7 +245,7 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
               setCurrentStepIndex(0);
               const step = route.legs[0].steps[0];
               setCurrentStepInitialDist(step.distance || 0);
-              const parsed = parseManeuver(step, t);
+              const parsed = parseManeuver(step, tRef.current);
               setCurrentManeuver(parsed);
               const stepDist = step.distance || 0;
               const fallbackDist = Math.round(turf.distance(
@@ -285,11 +287,11 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
               if (!parsedNext.skipVoice) {
                 if (distToStepEndMeters >= 80 && distToStepEndMeters <= 120 && !nextManeuverWarningNotifiedRef.current) {
                   nextManeuverWarningNotifiedRef.current = true;
-                  const toBn = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+                  
                   const spokenDist = langRef.current === 'bn' ? toBn(distToStepEndMeters) : distToStepEndMeters;
                   
                   if (langRef.current === 'bn') {
-                    speakPrompt(`${spokenDist} মিটার পর ${parsedNext.text}`);
+                    speakPrompt(tRef.current('hud_turn_distance', { dist: spokenDist, instruction: parsedNext.text }));
                   } else {
                     speakPrompt(`In ${spokenDist} meters, ${parsedNext.text}`);
                   }
@@ -334,11 +336,11 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
                 const turnDist = Math.round(nextStep.distance || 0);
                 
                 if (!parsed.skipVoice && turnDist > 0) {
-                  const toBn = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+                  
                   const spokenDist = langRef.current === 'bn' ? toBn(turnDist) : turnDist;
                   
                   if (langRef.current === 'bn') {
-                    speakPrompt(`${spokenDist} মিটার পর ${parsed.text}`);
+                    speakPrompt(tRef.current('hud_turn_distance', { dist: spokenDist, instruction: parsed.text }));
                   } else {
                     speakPrompt(`In ${spokenDist} meters, ${parsed.text}`);
                   }
@@ -413,7 +415,7 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
         if (lang === 'en') {
           speakPrompt(`Next pandal ${name}, ${distanceToTarget} meters ahead`);
         } else {
-          speakPrompt(`পরবর্তী মণ্ডপ ${name}, আর ${distanceToTarget} মিটার`);
+          speakPrompt(tRef.current('hud_next_pandal', { name, dist: distanceToTarget }));
         }
       }
     }

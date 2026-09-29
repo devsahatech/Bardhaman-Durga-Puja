@@ -219,12 +219,12 @@ export default function MapView({
   const handleCheckIn = useCallback(async (pandal) => {
     // Geofence check
     if (!userLocation) {
-      alert('আপনার লাইভ লোকেশন পাওয়া যাচ্ছে না। দয়া করে GPS অন করুন।');
+      alert(t('map_no_location'));
       return;
     }
     const distMeters = haversineDistance(userLocation, pandal) * 1000;
     if (distMeters > 120) {
-      alert(`আপনি মণ্ডপ থেকে অনেক দূরে আছেন (${Math.round(distMeters)} মিটার)। ১২০ মিটারের মধ্যে এলে চেক-ইন করতে পারবেন।`);
+      alert(t('map_too_far', { dist: Math.round(distMeters) }));
       return;
     }
 
@@ -232,7 +232,7 @@ export default function MapView({
     const now = Date.now();
     // 2 hours cooldown
     if (lastCheckIn && (now - parseInt(lastCheckIn)) < 2 * 60 * 60 * 1000) {
-      alert('আপনি ইতিমধ্যে এই মণ্ডপে চেক-ইন করেছেন! ২ ঘণ্টা পর আবার চেষ্টা করুন।');
+      alert(t('map_already_checked_in'));
       return;
     }
 
@@ -241,10 +241,10 @@ export default function MapView({
         await supabase.from('pandal_visits').insert([{ pandal_id: String(pandal.id) }]);
       }
       safeStorage.set(`last_checkin_${pandal.id}`, now.toString());
-      alert('চেক-ইন সফল হয়েছে!');
+      alert(t('map_checkin_success'));
     } catch (err) {
       console.error(err);
-      alert('চেক-ইন করতে সমস্যা হয়েছে।');
+      alert(t('map_checkin_error'));
     }
   }, [userLocation]);
 
@@ -400,7 +400,7 @@ export default function MapView({
           const routeIndex = selectedRoute.findIndex(p => p.id === pandal.id);
           const count = liveCounts[pandal.id] || 0;
           const distMeters = userLocation ? haversineDistance(userLocation, pandal) * 1000 : Infinity;
-          const checkInText = (distMeters >= 75 && distMeters <= 120) ? 'আমি মণ্ডপের কাছেই আছি (Check-in)' : 'চেক-ইন';
+          const checkInText = (distMeters >= 75 && distMeters <= 120) ? (lang === 'en' ? 'I am near the pandal (Check-in)' : t('map_checkin')) : t('map_checkin');
 
           return (
             <Marker 
@@ -438,7 +438,7 @@ export default function MapView({
                           </div>
                           {count > 0 && (
                             <div className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full w-max mt-1">
-                              <Users className="w-3 h-3" /> ● {count} জন দর্শনার্থী উপস্থিত
+                              <Users className="w-3 h-3" /> ● {count} {t('map_visitors_present')}
                             </div>
                           )}
                         </div>
@@ -465,7 +465,7 @@ export default function MapView({
                                 : 'bg-red-800 hover:bg-red-900 text-white'
                             } shadow-sm`}
                           >
-                            {isAdded ? '- তালিকা থেকে বাদ দিন' : '+ রুটে যোগ করুন'}
+                            {isAdded ? t('map_remove_from_route') : t('map_add_to_route')}
                           </button>
                           <button 
                             onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${pandal.lat},${pandal.lng}`, '_blank')}
@@ -488,13 +488,13 @@ export default function MapView({
                                   : 'bg-stone-100 hover:bg-green-50 hover:text-green-700 text-stone-700 border border-stone-200 text-xs'
                               }`}
                             >
-                              <CheckCircle className="w-3.5 h-3.5 shrink-0" /> {distMeters > 120 ? 'নিকটে গেলে চেক-ইন করতে পারবেন' : 'চেক-ইন'}
+                              <CheckCircle className="w-3.5 h-3.5 shrink-0" /> {distMeters > 120 ? t('map_checkin_near') : t('map_checkin')}
                             </button>
                             <button 
                               onClick={() => setReviewPandal(pandal)}
                               className="bg-stone-100 hover:bg-amber-50 hover:text-amber-700 text-stone-700 border border-stone-200 py-1.5 rounded-md font-semibold flex items-center justify-center gap-1 transition-colors text-xs"
                             >
-                              <MessageSquarePlus className="w-3.5 h-3.5" /> টিপস দিন
+                              <MessageSquarePlus className="w-3.5 h-3.5" /> {t('map_give_tips')}
                             </button>
                           </div>
                           <button 

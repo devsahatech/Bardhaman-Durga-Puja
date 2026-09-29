@@ -70,7 +70,7 @@ export default function TrendsPanel() {
     <div className="bg-stone-900/50 backdrop-blur-md rounded-2xl p-6 border border-stone-800">
       <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
         <Users className="w-5 h-5 text-amber-500" />
-        বিগত ২ দিনের ট্রেন্ডিং মণ্ডপ
+        বিগত 2 দিনের ট্রেন্ডিং মণ্ডপ
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -111,7 +111,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
                     type="text"
                     value={pandalName}
                     onChange={(e) => setPandalName(e.target.value)}
-                    placeholder="যেমন: সর্বমঙ্গলা"
+                    placeholder={t('feedback_pandal_placeholder')}
                     className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
                 </div>
