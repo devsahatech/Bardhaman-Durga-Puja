@@ -31,11 +31,14 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
 
   const { speak: speakPrompt, isVoiceMuted, setIsVoiceMuted, isSpeaking } = useVoice({ lang });
 
+  const langRef = useRef(lang);
+  useEffect(() => { langRef.current = lang; }, [lang]);
+
   const wakeLockRef = useRef(null);
   const watchIdRef = useRef(null);
   const socketRef = useRef(null);
   const pollingIntervalRef = useRef(null);
-  const liveCountsRef = useRef({});
+  const [liveCounts, setLiveCounts] = useState({});
   const lastOsrmFailTimeRef = useRef(0);
   const consecutiveArrivalsRef = useRef(0);
   const lastArrivalTimeRef = useRef(0);
@@ -58,7 +61,7 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
             data.forEach(row => {
               counts[row.pandal_id] = (counts[row.pandal_id] || 0) + 1;
             });
-            liveCountsRef.current = counts;
+            setLiveCounts(counts);
           }
         }
       } catch (err) {
@@ -283,9 +286,9 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
                 if (distToStepEndMeters >= 80 && distToStepEndMeters <= 120 && !nextManeuverWarningNotifiedRef.current) {
                   nextManeuverWarningNotifiedRef.current = true;
                   const toBn = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
-                  const spokenDist = lang === 'bn' ? toBn(distToStepEndMeters) : distToStepEndMeters;
+                  const spokenDist = langRef.current === 'bn' ? toBn(distToStepEndMeters) : distToStepEndMeters;
                   
-                  if (lang === 'bn') {
+                  if (langRef.current === 'bn') {
                     speakPrompt(`${spokenDist} মিটার পর ${parsedNext.text}`);
                   } else {
                     speakPrompt(`In ${spokenDist} meters, ${parsedNext.text}`);
@@ -332,9 +335,9 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
                 
                 if (!parsed.skipVoice && turnDist > 0) {
                   const toBn = (n) => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
-                  const spokenDist = lang === 'bn' ? toBn(turnDist) : turnDist;
+                  const spokenDist = langRef.current === 'bn' ? toBn(turnDist) : turnDist;
                   
-                  if (lang === 'bn') {
+                  if (langRef.current === 'bn') {
                     speakPrompt(`${spokenDist} মিটার পর ${parsed.text}`);
                   } else {
                     speakPrompt(`In ${spokenDist} meters, ${parsed.text}`);
@@ -438,7 +441,7 @@ export function useLiveNavigator(optimizedRoute, lang, t) {
     isSpeaking,
     osrmError,
     gpsPermissionDenied,
-    liveCounts: liveCountsRef.current,
+    liveCounts,
     speakPrompt
   };
 }
