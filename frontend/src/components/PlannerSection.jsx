@@ -40,33 +40,37 @@ import {
 // Dynamically import MapView with SSR disabled
 const MapView = dynamic(() => import('./MapView'), {
   ssr: false,
-  loading: () => (
+  loading: () => {
+    return (
+      
     <div className="w-full h-full bg-stone-100 animate-pulse flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <MapPin className="w-8 h-8 text-amber-400 animate-bounce" />
-        <span className="text-amber-700 font-medium">ম্যাপ লোড হচ্ছে...</span>
+        <span className="text-amber-700 font-medium">Loading map... / ম্যাপ লোড হচ্ছে...</span>
       </div>
     </div>
-  )
+  
+    );
+  }
 });
 
 // --- Transport Mode pills ---
 const TRANSPORT_PILLS = [
-  { key: 'walking', Icon: Footprints, label: 'হেঁটে',  labelEn: 'Walk'  },
-  { key: 'car', Icon: Car,        label: 'গাড়িতে', labelEn: 'Vehicle' },
+  { key: 'walking', Icon: Footprints, label: 'হেঁটে', labelEn: 'Walk', labelBng: 'Walk'  },
+  { key: 'car', Icon: Car,        label: 'গাড়িতে', labelEn: 'Vehicle', labelBng: 'Vehicle' },
 ];
 
 const TOP_N_OPTIONS = [
   { n: 5,    Icon: Trophy, label: 'Top 5'  },
   { n: 10,   Icon: Star,   label: 'Top 10' },
   { n: 15,   Icon: Star,   label: 'Top 15' },
-  { n: -1,   Icon: Flag,   label: lang => lang === 'en' ? 'All' : 'সব' },
+  { n: -1,   Icon: Flag,   label: lang => lang === 'en' ? 'All' : (lang === 'bn' ? 'সব' : 'Sob') },
 ];
 
 const BUDGET_OPTIONS = [
-  { minutes: 120,  Icon: Zap,          label: '২ ঘণ্টা', labelEn: '2 hours' },
-  { minutes: 240,  Icon: Timer,        label: '৪ ঘণ্টা', labelEn: '4 hours' },
-  { minutes: 360,  Icon: Moon,         label: '৬ ঘণ্টা', labelEn: '6 hours' },
+  { minutes: 120,  Icon: Zap,          label: '2 ঘণ্টা', labelEn: '2 hours' },
+  { minutes: 240,  Icon: Timer,        label: '4 ঘণ্টা', labelEn: '4 hours' },
+  { minutes: 360,  Icon: Moon,         label: '6 ঘণ্টা', labelEn: '6 hours' },
   { minutes: -1,   Icon: InfinityIcon, label: 'সারা দিন', labelEn: 'All day' },
 ];
 
@@ -168,7 +172,7 @@ export default function PlannerSection() {
       })
       .catch(err => {
         console.error('Error loading pandals:', err);
-        setErrorPandals('লোড করতে সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+        setErrorPandals(t('pl_load_error'));
       });
   }, [updateRouteState]);
 
@@ -199,7 +203,7 @@ export default function PlannerSection() {
       isPreview = true;
     }
 
-    const END_NODE = { id: 'END', name: 'Return to Start', name_bn: 'শুরুর স্থান', name_en: 'Return to Start', zone: 'Destination', lat: origin.lat, lng: origin.lng };
+    const END_NODE = { id: 'END', name: 'Return to Start', name_bn: t('pl_start_location'), name_en: 'Return to Start', zone: 'Destination', lat: origin.lat, lng: origin.lng };
 
     const effectiveTransportMode = transportMode;
 
@@ -214,7 +218,7 @@ export default function PlannerSection() {
     if (plannerTab === 'budget' && effectiveBudgetMin) {
       const { selected, stats: itin, trimmedCount } = solveBudget(origin, pandalsData, effectiveBudgetMin, effectiveTransportMode);
       const bLabel = BUDGET_OPTIONS.find(b => b.minutes === budgetMin);
-      const trimMsg = trimmedCount > 0 ? `আপনার ${bLabel?.label ?? 'নির্ধারিত'} বাজেটে সেরা ${selected.length}টি মণ্ডপ নির্বাচিত` : null;
+      const trimMsg = trimmedCount > 0 ? `আপনার ${(lang === 'en' ? bLabel?.labelEn : (lang === 'bn' ? bLabel?.label : bLabel?.labelBng)) ?? 'নির্ধারিত'} বাজেটে সেরা ${selected.length}টি মণ্ডপ নির্বাচিত` : null;
       return { optimizedRoute: selected.length > 0 ? [...selected, END_NODE] : [], stats: itin, trimMessage: trimMsg, isPreviewMode: isPreview };
     }
 
@@ -271,13 +275,13 @@ export default function PlannerSection() {
 
   const handleOtherTime = async () => {
     const { value } = await Swal.fire({
-      title: 'কত মিনিট সময় আছে?',
+      title: t('pl_other_time_title'),
       input: 'number',
       inputAttributes: { min: 30, max: 720, step: 15 },
-      inputPlaceholder: '৩০ থেকে ৭২০ মিনিট',
+      inputPlaceholder: t('pl_other_time_placeholder'),
       showCancelButton: true,
-      confirmButtonText: 'ঠিক আছে',
-      cancelButtonText: 'বাতিল',
+      confirmButtonText: t('pl_other_time_confirm'),
+      cancelButtonText: t('pl_other_time_cancel'),
       confirmButtonColor: '#8B1E3F',
       cancelButtonColor: '#999',
     });
@@ -416,8 +420,8 @@ export default function PlannerSection() {
       setBatchState(null);
       Swal.fire({
         icon: 'success',
-        title: lang === 'en' ? 'All pandals visited!' : 'সব মণ্ডপ দেখা শেষ!',
-        text: lang === 'en' ? 'Hope you enjoyed the tour.' : 'আশা করি ভালো লেগেছে।',
+        title: t('pl_all_pandals_visited'),
+        text: t('pl_hope_enjoyed'),
         timer: 3000,
         showConfirmButton: false,
       });
@@ -472,10 +476,10 @@ export default function PlannerSection() {
         className="w-full text-left bg-white border-2 border-red-100 hover:border-red-200 rounded-2xl p-4 shadow-sm mt-4 transition-colors"
       >
          <div className="flex justify-between items-start mb-2">
-           <div className="text-xs text-gray-500 font-semibold"><span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {lang === 'en' ? 'From your location' : 'আপনার অবস্থান থেকে'}</span></div>
+           <div className="text-xs text-gray-500 font-semibold"><span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {t('pl_from_your_location')}</span></div>
            {optimizedRoute.length > 1 && (
              <div className="text-[10px] text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full">
-               {lang === 'en' ? 'Tap to view list' : 'তালিকা দেখতে ট্যাপ করুন'}
+               {t('pl_tap_to_view_list')}
              </div>
            )}
          </div>
@@ -508,7 +512,7 @@ export default function PlannerSection() {
               }}
               className="text-xs font-bold text-red-700 hover:text-red-900 underline"
             >
-              {lang === 'en' ? 'Clear all' : 'সব মুছুন'}
+              {t('pl_clear_all')}
             </button>
           </div>
         )}
@@ -610,18 +614,12 @@ export default function PlannerSection() {
                     <div className="flex-1">
                       <p className="text-sm font-bold text-gray-900 leading-tight">
                         {batchState.currentBatchIndex < batchState.batches.length - 1
-                          ? (lang === 'en'
-                              ? `Done with first ${batchState.batches[batchState.currentBatchIndex].length}? Tap for next batch`
-                              : `প্রথম ${batchState.batches[batchState.currentBatchIndex].length}টি শেষ? পরেরটির জন্য ক্লিক করুন`)
-                          : (lang === 'en'
-                              ? `Almost done, ${batchState.batches[batchState.currentBatchIndex].length} stops left`
-                              : `প্রায় শেষ, বাকি ${batchState.batches[batchState.currentBatchIndex].length}টি মণ্ডপ`)
+                          ? (t('pl_batch_first_done', { n: batchState.batches[batchState.currentBatchIndex].length }))
+                          : (t('pl_batch_almost', { n: batchState.batches[batchState.currentBatchIndex].length }))
                         }
                       </p>
                       <p className="text-[11px] text-gray-500 mt-1">
-                        {lang === 'en'
-                          ? `Batch ${batchState.currentBatchIndex + 1} of ${batchState.batches.length}`
-                          : `ব্যাচ ${batchState.currentBatchIndex + 1} / ${batchState.batches.length}`}
+                        {t('pl_batch_counter', { current: batchState.currentBatchIndex + 1, total: batchState.batches.length })}
                       </p>
                     </div>
                     <button
@@ -672,7 +670,7 @@ export default function PlannerSection() {
                     }`}
                   >
                     <Icon className="w-5 h-5" />
-                    {lang === 'en' ? labelEn : label}
+                    {lang === 'en' ? labelEn : (lang === 'bn' ? label : labelBng)}
                   </button>
                 ))}
                 <button
@@ -680,7 +678,7 @@ export default function PlannerSection() {
                    className="col-span-2 md:col-span-4 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 transition-colors"
                 >
                   <PlusCircle className="w-4 h-4" />
-                  <span>{lang === 'en' ? 'Other' : 'অন্যান্য'}</span>
+                  <span>{t('pl_time_other')}</span>
                 </button>
               </div>
 
@@ -749,7 +747,7 @@ export default function PlannerSection() {
                             }`}
                           >
                             <Icon className="w-4 h-4" />
-                            {lang === 'en' ? labelEn : label}
+                            {lang === 'en' ? labelEn : (lang === 'bn' ? label : labelBng)}
                           </button>
                         ))}
                       </div>
@@ -781,7 +779,7 @@ export default function PlannerSection() {
               {/* Summary Card & Actions Gated by Selection */}
               {!(hasSelectedTime || manualPandals.length > 0 || optimizedRoute.length > 0) ? (
                 <div className="mt-4 p-6 border-2 border-dashed border-gray-200 rounded-2xl text-center bg-gray-50 flex items-center justify-center h-48">
-                  <p className="text-gray-500 font-medium text-sm">সময় বেছে নিন, আমরা সেরা রুট বানিয়ে দেব</p>
+                  <p className="text-gray-500 font-medium text-sm">{t('pl_time_pick_hint')}</p>
                 </div>
               ) : (
                 <>
@@ -792,7 +790,7 @@ export default function PlannerSection() {
                     <button
                       onClick={() => {
                         if (typeof navigator === 'undefined' || !navigator.geolocation) {
-                          Swal.fire({ icon: 'error', title: 'অসমর্থিত ডিভাইস', text: 'আপনার ডিভাইসে লোকেশন সার্ভিস সাপোর্ট করছে না।' });
+                          Swal.fire({ icon: 'error', title: t('pl_device_error_title'), text: t('pl_device_error_text') });
                           return;
                         }
                         if (startLocation === null) {
@@ -846,9 +844,7 @@ export default function PlannerSection() {
             <div className="flex items-center gap-2 text-red-800">
               <Target className="w-4 h-4" />
               <span className="font-bold text-sm">
-                {lang === 'en'
-                  ? `${manualPandals.length} pandals selected`
-                  : `${manualPandals.length}টি মণ্ডপ বেছেছেন`}
+                {t('pl_selected_count', { count: manualPandals.length })}
               </span>
             </div>
           </div>
@@ -863,7 +859,7 @@ export default function PlannerSection() {
               }}
               className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold text-sm"
             >
-              {lang === 'en' ? 'Cancel' : 'বাতিল'}
+              {t('pl_cancel')}
             </button>
             <button
               onClick={() => {
@@ -873,7 +869,7 @@ export default function PlannerSection() {
               disabled={manualPandals.length === 0}
               className="flex-1 py-3 bg-red-700 text-white rounded-xl font-bold text-sm disabled:opacity-50"
             >
-              {lang === 'en' ? 'Done' : 'সম্পূর্ণ করুন'}
+              {t('pl_confirm')}
             </button>
           </div>
         </div>

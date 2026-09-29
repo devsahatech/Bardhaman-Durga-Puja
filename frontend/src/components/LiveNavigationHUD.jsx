@@ -74,7 +74,7 @@ export default function LiveNavigationHUD({ navState, totalStops }) {
       let text = '';
       if (isReturnToStart) {
         text = lang === 'bn'
-          ? "আপনি শুরুর স্থানে পৌঁছে গেছেন। চলো পূজো ব্যবহার করার জন্য ধন্যবাদ!"
+          ? t('hud_tour_complete_voice')
           : "You've returned to your starting point. Thank you for using Cholo Pujo!";
       } else {
         text = lang === 'bn' 
@@ -117,7 +117,7 @@ export default function LiveNavigationHUD({ navState, totalStops }) {
             </div>
             <div className="flex flex-col">
               <span className="text-gray-400 font-bold text-xs">
-                {currentManeuver && liveRemainingMeters > 0 ? `${lang === 'bn' ? String(liveRemainingMeters).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]) : liveRemainingMeters} ${t('meters_after')}` : ''}
+                {currentManeuver && liveRemainingMeters > 0 ? `${lang === 'bn' ? String(liveRemainingMeters) : liveRemainingMeters} ${t('meters_after')}` : ''}
               </span>
               <span className="text-white font-bold text-lg leading-tight">
                 {currentManeuver?.text || t('straight')}
@@ -144,10 +144,10 @@ export default function LiveNavigationHUD({ navState, totalStops }) {
                 <CheckCircle className="w-8 h-8" />
               </div>
               <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
-                {lang === 'bn' ? "শুরুর স্থানে পৌঁছেছেন!" : "You've returned to your starting point!"}
+                {lang === 'bn' ? t('hud_tour_complete_title') : "You've returned to your starting point!"}
               </h2>
               <p className="text-gray-600 mb-6 font-medium">
-                {lang === 'bn' ? "চলো পূজো ব্যবহার করার জন্য ধন্যবাদ!" : "Thank you for using Cholo Pujo!"}
+                {lang === 'bn' ? t('hud_tour_complete_sub') : "Thank you for using Cholo Pujo!"}
               </p>
               <button 
                 onClick={endTour}
@@ -226,7 +226,7 @@ export default function LiveNavigationHUD({ navState, totalStops }) {
                 }}
                 className="w-full mt-3 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
               >
-                Google Maps-এ চলুন <ExternalLink className="w-4 h-4" />
+                {t('hud_open_gmaps')} <ExternalLink className="w-4 h-4" />
               </button>
             </>
           )}
