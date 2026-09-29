@@ -7,6 +7,8 @@ export function useVoice({ lang }) {
   const [isVoiceMuted, setIsVoiceMutedState] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const lastSpokenRef = useRef('');
+  const lastSpokenAtRef = useRef(0);
+  const MIN_SPEECH_GAP_MS = 6000; // 6 seconds
 
   const setIsVoiceMuted = (val) => {
     setIsVoiceMutedState(val);
@@ -23,6 +25,11 @@ export function useVoice({ lang }) {
     if (isVoiceMutedRef.current || typeof window === 'undefined' || !window.speechSynthesis) return;
     
     if (lastSpokenRef.current === text) return;
+
+    const now = Date.now();
+    if (now - lastSpokenAtRef.current < MIN_SPEECH_GAP_MS) {
+      return; // Too soon
+    }
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -44,6 +51,7 @@ export function useVoice({ lang }) {
     window.speechSynthesis.speak(utterance);
     
     lastSpokenRef.current = text;
+    lastSpokenAtRef.current = now;
     
     setTimeout(() => {
       lastSpokenRef.current = '';
