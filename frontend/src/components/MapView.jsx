@@ -10,6 +10,7 @@ import ReviewModal from './ReviewModal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { safeStorage } from '@/utils/storage';
 import { haversineDistance } from '../utils/tspSolver';
+import { getPandalPinIcon } from './PandalPin';
 
 // Fix for default Leaflet icon paths in Next.js
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,6 +21,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Custom Orange Icon for Trending Pandals
+// eslint-disable-next-line no-unused-vars
 const trendingIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -42,6 +44,7 @@ const getLivePulseIcon = (heading = 0) => L.divIcon({
   iconAnchor: [48, 48]
 });
 
+// eslint-disable-next-line no-unused-vars
 const routeIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -406,17 +409,17 @@ export default function MapView({
             <Marker 
               key={pandal.id} 
               position={[pandal.lat, pandal.lng]}
-              icon={
-                isAdded ? routeIcon 
-                : pandal.trending === true ? trendingIcon 
-                : new L.Icon.Default()
-              }
+              icon={getPandalPinIcon({
+                state: isAdded ? 'selected' : (pandal.trending === true ? 'trending' : 'default'),
+                index: isAdded ? routeIndex + 1 : 0,
+                zoom: currentZoom
+              })}
             >
               {currentZoom >= 15 && (
                 <Tooltip
                   permanent
                   direction="top"
-                  offset={[0, -34]}
+                  offset={[0, -36]}
                   className="pandal-name-label"
                   opacity={0.95}
                 >

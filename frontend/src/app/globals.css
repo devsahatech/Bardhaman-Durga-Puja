@@ -89,17 +89,90 @@ body {
 }
 
 .pandal-name-label {
-  background: white;
-  border: none;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  color: #1f2937;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #1F1B16;
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 0;
+  margin: 0;
   white-space: nowrap;
   pointer-events: none;
+  text-shadow:
+    0 0 3px #FAF6EE, 0 0 3px #FAF6EE,
+    0 0 3px #FAF6EE, 0 0 3px #FAF6EE;
 }
-.pandal-name-label::before {
-  display: none;
+.pandal-name-label::before,
+.pandal-name-label::after {
+  display: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+.leaflet-tooltip.pandal-name-label {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Pandal Pin Styles */
+.pandal-pin-wrapper {
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+}
+.pandal-pin-wrapper .pandal-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.pandal-pin-wrapper .pandal-pin-default {
+  background-color: #8B1E3F;
+}
+.pandal-pin-wrapper .pandal-pin-selected {
+  background-color: #E8A33D;
+}
+.pandal-pin-wrapper .pandal-pin-trending {
+  background-color: #8B1E3F;
+}
+.pandal-pin-wrapper .pandal-pin-inner {
+  position: absolute;
+  border-radius: 50%;
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.pandal-pin-wrapper .pandal-pin-default .pandal-pin-inner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #E8A33D;
+  top: 6px;
+  left: 6px;
+}
+.pandal-pin-wrapper .pandal-pin-trending .pandal-pin-inner {
+  width: 10px;
+  height: 10px;
+  border: 3px solid #E8A33D;
+  top: 6px;
+  left: 6px;
+}
+.pandal-pin-wrapper .pandal-pin-selected .pandal-pin-inner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #8B1E3F;
+  top: 3px;
+  left: 3px;
+  background: transparent;
+}
+.pandal-pin-wrapper .pandal-pin-index {
+  color: #8B1E3F;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 1;
 }
