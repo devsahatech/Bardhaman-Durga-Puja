@@ -140,7 +140,9 @@ export default function MapView({
   onOpenPlanner,
   drawerOpen = false,
   drawerState = 'closed',
-  mode = 'discover'
+  mode = 'discover',
+  isGpsReady = true,
+  onRequestGps
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -461,12 +463,24 @@ export default function MapView({
                       {mode === 'plan' && (
                         <>
                           <button 
-                            onClick={() => isAdded && onRemovePandal ? onRemovePandal(pandal.id) : onAddPandal(pandal)}
-                            className={`w-full py-2 rounded-md font-bold flex items-center justify-center gap-1 transition-all ${
-                              isAdded 
-                                ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100' 
-                                : 'bg-red-800 hover:bg-red-900 text-white'
-                            } shadow-sm`}
+                            onClick={() => {
+                              if (isAdded && onRemovePandal) {
+                                onRemovePandal(pandal.id);
+                                return;
+                              }
+                              if (!isGpsReady) {
+                                onRequestGps && onRequestGps();
+                                return;
+                              }
+                              onAddPandal && onAddPandal(pandal);
+                            }}
+                            className={`w-full py-2 rounded-md font-bold flex items-center justify-center gap-1 transition-all shadow-sm ${
+                              !isGpsReady
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : isAdded 
+                                  ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100' 
+                                  : 'bg-red-800 hover:bg-red-900 text-white'
+                            }`}
                           >
                             {isAdded ? t('map_remove_from_route') : t('map_add_to_route')}
                           </button>

@@ -93,6 +93,7 @@ export default function PlannerSection() {
   const [touchStartY, setTouchStartY] = useState(null);
   const [touchCurrentY, setTouchCurrentY] = useState(null);
   const { position: startLocation, error: gpsError, permission: gpsPermission, retry: retryGPS } = useGeolocation({ mode: 'once' });
+  const isGpsReady = gpsPermission !== 'denied' && !!startLocation;
 
   const [hasSelectedTime, setHasSelectedTime] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
@@ -187,7 +188,7 @@ export default function PlannerSection() {
 
     let selectedForCalc = [];
     if (plannerTab === 'top' && topN !== null) {
-      selectedForCalc = filterTopN(pandalsData, effectiveTopN, startLocation);
+      selectedForCalc = filterTopN(pandalsData, effectiveTopN, startLocation, APP_CONFIG.planner.maxRadiusKm);
     } else if (plannerTab === 'budget' && budgetMin !== null) {
       selectedForCalc = [...pandalsData].sort((a, b) => (a.popularity ?? 99) - (b.popularity ?? 99));
     } else if (plannerTab === 'manual') {
@@ -216,7 +217,7 @@ export default function PlannerSection() {
     };
 
     if (plannerTab === 'budget' && effectiveBudgetMin) {
-      const { selected, stats: itin, trimmedCount } = solveBudget(origin, pandalsData, effectiveBudgetMin, effectiveTransportMode);
+      const { selected, stats: itin, trimmedCount } = solveBudget(origin, pandalsData, effectiveBudgetMin, effectiveTransportMode, APP_CONFIG.planner.maxRadiusKm);
       const bLabel = BUDGET_OPTIONS.find(b => b.minutes === budgetMin);
       const trimMsg = trimmedCount > 0 ? `আপনার ${(lang === 'en' ? bLabel?.labelEn : (lang === 'bn' ? bLabel?.label : bLabel?.labelBng)) ?? 'নির্ধারিত'} বাজেটে সেরা ${selected.length}টি মণ্ডপ নির্বাচিত` : null;
       return { optimizedRoute: selected.length > 0 ? [...selected, END_NODE] : [], stats: itin, trimMessage: trimMsg, isPreviewMode: isPreview };
@@ -224,6 +225,11 @@ export default function PlannerSection() {
 
     return buildRoute(selectedForCalc);
   }, [pandalsData, plannerTab, topN, budgetMin, transportMode, manualPandals, startLocation, hasUserInteracted]);
+
+  const selectedCount = useMemo(
+    () => optimizedRoute.filter(p => p.id !== '__START__' && p.id !== 'END').length,
+    [optimizedRoute]
+  );
 
   const liveNavState = useLiveNavigator(optimizedRoute, lang, t);
 
@@ -520,6 +526,39 @@ export default function PlannerSection() {
     </div>
   );
 
+  const showGpsPrompt = () => {
+    Swal.fire({
+      title: t('gps_required_title'),
+      text: t('gps_required_body'),
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#8B1E3F',
+      cancelButtonColor: '#999',
+      confirmButtonText: t('gps_required_ok'),
+      cancelButtonText: t('gps_required_cancel'),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        retryGPS();
+        setTimeout(() => {
+          if (!navigator.geolocation) return;
+          navigator.geolocation.getCurrentPosition(
+            () => {},
+            () => {
+              Swal.fire({
+                title: t('gps_blocked_title'),
+                html: t('gps_blocked_body'),
+                icon: 'info',
+                confirmButtonColor: '#8B1E3F',
+                confirmButtonText: t('gps_required_ok'),
+              });
+            },
+            { timeout: 3000 }
+          );
+        }, 2500);
+      }
+    });
+  };
+
   return (
     <section className="relative h-full w-full bg-stone-100 overflow-hidden">
       {(gpsPermission === 'denied' || (gpsError && gpsError.includes('denied'))) && (
@@ -553,6 +592,8 @@ export default function PlannerSection() {
           activeRouteLine={liveNavState.activeRouteLine}
           activePandal={liveNavState.activePandal}
           liveCounts={liveCounts}
+          isGpsReady={isGpsReady}
+          onRequestGps={showGpsPrompt}
           onOpenPlanner={() => { setDrawerState('half'); setUiMode('main'); }}
           drawerOpen={drawerState !== 'closed'}
           drawerState={drawerState}
@@ -649,6 +690,10 @@ export default function PlannerSection() {
                   <button
                     key={String(minutes)}
                     onClick={() => { 
+                      if (!isGpsReady) {
+                        showGpsPrompt();
+                        return;
+                      }
                       if (plannerTab === 'budget' && budgetMin === minutes) {
                         setBudgetMin(null);
                         setHasSelectedTime(false);
@@ -664,9 +709,11 @@ export default function PlannerSection() {
                       }
                     }}
                     className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${
-                      plannerTab === 'budget' && budgetMin === minutes
-                        ? 'bg-red-700 text-white shadow-md shadow-red-200'
-                        : 'bg-red-50 text-red-700 border border-red-100 hover:bg-red-100'
+                      !isGpsReady
+                        ? 'opacity-50 grayscale cursor-not-allowed bg-red-50 text-red-700 border border-red-100'
+                        : plannerTab === 'budget' && budgetMin === minutes
+                          ? 'bg-red-700 text-white shadow-md shadow-red-200'
+                          : 'bg-red-50 text-red-700 border border-red-100 hover:bg-red-100'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -674,8 +721,18 @@ export default function PlannerSection() {
                   </button>
                 ))}
                 <button
-                   onClick={handleOtherTime}
-                   className="col-span-2 md:col-span-4 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 transition-colors"
+                   onClick={() => {
+                     if (!isGpsReady) {
+                       showGpsPrompt();
+                       return;
+                     }
+                     handleOtherTime();
+                   }}
+                   className={`col-span-2 md:col-span-4 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 transition-colors ${
+                     !isGpsReady
+                       ? 'opacity-50 grayscale cursor-not-allowed'
+                       : 'hover:border-red-300 hover:bg-red-50 hover:text-red-700'
+                   }`}
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>{t('pl_time_other')}</span>
@@ -706,6 +763,10 @@ export default function PlannerSection() {
                           <button
                             key={String(n)}
                             onClick={() => { 
+                              if (!isGpsReady) {
+                                showGpsPrompt();
+                                return;
+                              }
                               if (plannerTab === 'top' && topN === n) {
                                 setTopN(null);
                                 setHasSelectedTime(false);
@@ -721,9 +782,11 @@ export default function PlannerSection() {
                               }
                             }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                              plannerTab === 'top' && topN === n
-                                ? 'bg-amber-500 text-white shadow-md'
-                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                              !isGpsReady
+                                ? 'opacity-50 grayscale cursor-not-allowed bg-white border border-gray-200 text-gray-600'
+                                : plannerTab === 'top' && topN === n
+                                  ? 'bg-amber-500 text-white shadow-md'
+                                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
@@ -739,11 +802,19 @@ export default function PlannerSection() {
                         {TRANSPORT_PILLS.map(({ key, Icon, label, labelEn }) => (
                           <button
                             key={key}
-                            onClick={() => setTransportMode(key)}
+                            onClick={() => {
+                              if (!isGpsReady) {
+                                showGpsPrompt();
+                                return;
+                              }
+                              setTransportMode(key);
+                            }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                              transportMode === key
-                                ? 'bg-red-700 text-white shadow-md'
-                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                              !isGpsReady
+                                ? 'opacity-50 grayscale cursor-not-allowed bg-white border border-gray-200 text-gray-600'
+                                : transportMode === key
+                                  ? 'bg-red-700 text-white shadow-md'
+                                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                           >
                             <Icon className="w-4 h-4" />
@@ -755,6 +826,10 @@ export default function PlannerSection() {
 
                     <button
                       onClick={() => {
+                        if (!isGpsReady) {
+                          showGpsPrompt();
+                          return;
+                        }
                         if (plannerTab === 'top' || plannerTab === 'budget') {
                           setManualPandals([]);
                           setTopN(null);
@@ -767,7 +842,11 @@ export default function PlannerSection() {
                         setIsPickingFromMap(true);
                         setHasUserInteracted(true);
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-3 bg-gray-800 text-white rounded-xl text-sm font-bold shadow-md hover:bg-gray-900 transition-colors"
+                      className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold shadow-md transition-colors ${
+                        !isGpsReady
+                          ? 'opacity-50 grayscale cursor-not-allowed bg-gray-800 text-white'
+                          : 'bg-gray-800 text-white hover:bg-gray-900'
+                      }`}
                     >
                       <MapPin className="w-4 h-4" />
                       {t('pl_select_from_map')} →
@@ -789,19 +868,26 @@ export default function PlannerSection() {
                   <div className="space-y-3 pt-2">
                     <button
                       onClick={() => {
+                        if (!isGpsReady) {
+                          showGpsPrompt();
+                          return;
+                        }
                         if (typeof navigator === 'undefined' || !navigator.geolocation) {
                           Swal.fire({ icon: 'error', title: t('pl_device_error_title'), text: t('pl_device_error_text') });
                           return;
                         }
-                        if (startLocation === null) {
-                          retryGPS();
-                        } else if (optimizedRoute.length > 0) {
+                        if (optimizedRoute.length > 0) {
                           if (window.speechSynthesis) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
                           liveNavState.startTour();
                         }
                       }}
-                      disabled={startLocation !== null && optimizedRoute.length <= 1}
-                      className="w-full py-4 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-2xl font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-red-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                      className={`w-full py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 transition-all ${
+                        !isGpsReady
+                          ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
+                          : optimizedRoute.length <= 1
+                            ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-red-700 to-red-900 text-white shadow-lg shadow-red-900/20 hover:scale-[1.02] active:scale-[0.98]'
+                      }`}
                     >
                       {startLocation === null ? (
                         <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {lang === 'en' ? 'Enable GPS' : 'জিপিএস অন করুন'}</span>
@@ -844,7 +930,7 @@ export default function PlannerSection() {
             <div className="flex items-center gap-2 text-red-800">
               <Target className="w-4 h-4" />
               <span className="font-bold text-sm">
-                {t('pl_selected_count', { count: manualPandals.length })}
+                {t('pl_selected_count', { n: selectedCount })}
               </span>
             </div>
           </div>

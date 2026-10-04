@@ -278,6 +278,12 @@ const translations = {
     hud_next_pandal: "পরবর্তী মণ্ডপ {name}, আর {dist} মিটার",
     feedback_pandal_placeholder: "যেমন: সর্বমঙ্গলা",
     review_submitting: "সাবমিট হচ্ছে...",
+    gps_required_title: 'জিপিএস চালু করুন',
+    gps_required_body: 'এই ফিচারটি ব্যবহার করতে সাইটের লোকেশন পারমিশন দিতে হবে।',
+    gps_required_ok: 'ঠিক আছে',
+    gps_required_cancel: 'বাতিল',
+    gps_blocked_title: 'লোকেশন ব্লক করা আছে',
+    gps_blocked_body: 'আপনার ব্রাউজারে এই সাইটের লোকেশন ব্লক করা আছে। সেটিংস থেকে <b>Location → Allow</b> করে আবার চেষ্টা করুন।',
   },
   en: {
     // Navbar
@@ -554,6 +560,12 @@ const translations = {
     hud_next_pandal: "Next pandal {name}, {dist} meters ahead",
     feedback_pandal_placeholder: "e.g. Sarbamangala",
     review_submitting: "Submitting...",
+    gps_required_title: 'Turn on GPS',
+    gps_required_body: 'This feature needs location permission for this site.',
+    gps_required_ok: 'OK',
+    gps_required_cancel: 'Cancel',
+    gps_blocked_title: 'Location is blocked',
+    gps_blocked_body: 'This site\'s location access is blocked in your browser. Open settings, set <b>Location → Allow</b>, and try again.',
   },
   bng: {
     // Navbar
@@ -827,6 +839,12 @@ const translations = {
     hud_next_pandal: "Poroborti mondop {name}, ar {dist} meter",
     feedback_pandal_placeholder: "Jemon: Sorbomongola",
     review_submitting: "Submit hochhe...",
+    gps_required_title: 'GPS Chalu Korun',
+    gps_required_body: 'Ei feature use korte site-er location permission dite hobe.',
+    gps_required_ok: 'Thik Ache',
+    gps_required_cancel: 'Cancel',
+    gps_blocked_title: 'Location Block Kora Ache',
+    gps_blocked_body: 'Apnar browser-e ei site-er location block kora ache. Settings theke <b>Location → Allow</b> kore abar chesta korun.',
   }
 };
 
