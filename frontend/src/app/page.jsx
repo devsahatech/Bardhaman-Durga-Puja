@@ -14,6 +14,11 @@ export const metadata = {
   description: 'Plan your Durga Puja pandal hopping in Bardhaman & Katwa. Free route planner with Bengali voice guidance. No login required.',
   alternates: {
     canonical: 'https://cholopujo.devsaha.tech',
+    languages: {
+      'bn-IN': 'https://cholopujo.devsaha.tech',
+      'en-IN': 'https://cholopujo.devsaha.tech',
+      'x-default': 'https://cholopujo.devsaha.tech',
+    },
   },
   openGraph: {
     type: 'website',

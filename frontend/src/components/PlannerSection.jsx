@@ -712,7 +712,7 @@ export default function PlannerSection() {
 
             {/* Header */}
             <div>
-              <h2 className="text-2xl font-extrabold text-red-900 leading-tight">{t('route_planner')}</h2>
+              <h1 className="text-2xl font-extrabold text-red-900 leading-tight">{t('route_planner')}</h1>
             </div>
 
             {/* Time Budget */}
