@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function FeedbackModal({ isOpen, onClose }) {
   const { t } = useLanguage();
@@ -12,7 +11,79 @@ export default function FeedbackModal({ isOpen, onClose }) {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
+  const turnstileContainerRef = useRef(null);
   const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.turnstile) {
+      setTurnstileLoaded(true);
+      return;
+    }
+
+    const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+    if (existing) {
+      if (window.turnstile) {
+        setTurnstileLoaded(true);
+      } else {
+        existing.addEventListener('load', () => setTurnstileLoaded(true));
+      }
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setTurnstileLoaded(true);
+    script.onerror = () => console.error('Turnstile script failed to load');
+    document.head.appendChild(script);
+
+    return () => setTurnstileLoaded(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!turnstileLoaded || !window.turnstile) return;
+
+    // Wait one tick for the container to mount
+    const timer = setTimeout(() => {
+      const container = turnstileContainerRef.current;
+      if (!container) return;
+      if (container.hasChildNodes()) {
+        // Widget already rendered; reset it for a fresh challenge
+        try {
+          window.turnstile.reset(container);
+        } catch (e) {
+          // ignore
+        }
+        return;
+      }
+
+      const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      if (!siteKey) {
+        console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing');
+        return;
+      }
+
+      try {
+        window.turnstile.render(container, {
+          sitekey: siteKey,
+          theme: 'light',
+          size: 'flexible',
+          callback: (token) => setTurnstileToken(token),
+          'error-callback': () => setTurnstileToken(''),
+          'expired-callback': () => setTurnstileToken(''),
+        });
+      } catch (err) {
+        console.error('Turnstile render failed:', err);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [turnstileLoaded, isOpen]);
 
   if (!isOpen) return null;
 
@@ -39,11 +110,25 @@ export default function FeedbackModal({ isOpen, onClose }) {
       if (!res.ok) {
         setStatus('error');
         setTurnstileToken('');
+        if (window.turnstile && turnstileContainerRef.current) {
+          try {
+            window.turnstile.reset(turnstileContainerRef.current);
+          } catch (e) {
+            // ignore
+          }
+        }
         return;
       }
 
       setStatus('success');
       setTurnstileToken('');
+      if (window.turnstile && turnstileContainerRef.current) {
+        try {
+          window.turnstile.reset(turnstileContainerRef.current);
+        } catch (e) {
+          // ignore
+        }
+      }
       setTimeout(() => {
         onClose();
         setCategory('general');
@@ -55,6 +140,13 @@ export default function FeedbackModal({ isOpen, onClose }) {
       console.error(err);
       setStatus('error');
       setTurnstileToken('');
+      if (window.turnstile && turnstileContainerRef.current) {
+        try {
+          window.turnstile.reset(turnstileContainerRef.current);
+        } catch (e) {
+          // ignore
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -151,13 +243,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
               )}
 
               <div className="flex justify-center">
-                <Turnstile
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                  onSuccess={(token) => setTurnstileToken(token)}
-                  onError={() => setTurnstileToken('')}
-                  onExpire={() => setTurnstileToken('')}
-                  options={{ theme: 'light', size: 'flexible' }}
-                />
+                <div ref={turnstileContainerRef} />
               </div>
 
               <div className="flex flex-row gap-3 pt-2">
