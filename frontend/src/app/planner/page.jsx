@@ -7,6 +7,11 @@ export const metadata = {
   description: 'Pick your pandals and get the shortest route in Bardhaman or Katwa. Free, no login.',
   alternates: {
     canonical: 'https://cholopujo.devsaha.tech/planner',
+    languages: {
+      'bn-IN': 'https://cholopujo.devsaha.tech/planner',
+      'en-IN': 'https://cholopujo.devsaha.tech/planner',
+      'x-default': 'https://cholopujo.devsaha.tech/planner',
+    },
   },
   openGraph: {
     type: 'website',

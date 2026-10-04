@@ -37,6 +37,11 @@ export const metadata = {
   keywords: ["durga puja bardhaman", "katwa durga puja", "pandal hopping", "puja route planner", "bengali navigation"],
   alternates: {
     canonical: 'https://cholopujo.devsaha.tech',
+    languages: {
+      'bn-IN': 'https://cholopujo.devsaha.tech',
+      'en-IN': 'https://cholopujo.devsaha.tech',
+      'x-default': 'https://cholopujo.devsaha.tech',
+    },
   },
   openGraph: {
     title: "Cholo Pujo — Bardhaman Durga Puja Route Planner",
