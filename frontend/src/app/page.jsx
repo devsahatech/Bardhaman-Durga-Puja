@@ -29,7 +29,10 @@ export const metadata = {
   },
 };
 
+import { getPandalCounts } from '@/lib/getPandalCounts';
+
 export default function Home() {
+  const pandalCounts = getPandalCounts();
   return (
     <main className="min-h-screen bg-[#FAF6EE] text-[#1F1B16] font-sans antialiased">
       {/* Navigation Bar */}
@@ -41,7 +44,7 @@ export default function Home() {
         <FeatureCards />
         <HowItWorksSection />
         <WhyCholoPujo />
-        <CitiesCovered />
+        <CitiesCovered pandalCounts={pandalCounts} />
         <LocalBusinesses />
         <SupportProject />
         <EmergencyNumbers />
