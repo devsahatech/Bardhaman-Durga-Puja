@@ -12,7 +12,8 @@ export function useRoutePersistence(initialState = null) {
       selectedPandals: [],
       transportMode: 'walking',
       currentStopIndex: 0,
-      plannerTab: null
+      plannerTab: null,
+      hasUserInteracted: false
     };
   });
 
@@ -32,7 +33,8 @@ export function useRoutePersistence(initialState = null) {
       activePlan: null,
       selectedPandals: [],
       transportMode: 'walking',
-      currentStopIndex: 0
+      currentStopIndex: 0,
+      hasUserInteracted: false
     });
     safeStorage.remove(STORAGE_KEY);
   }, []);

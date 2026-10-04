@@ -96,7 +96,6 @@ export default function PlannerSection() {
   const isGpsReady = gpsPermission !== 'denied' && !!startLocation;
 
   const [hasSelectedTime, setHasSelectedTime] = useState(false);
-  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [isPickingFromMap, setIsPickingFromMap] = useState(false);
   const [uiMode, setUiMode] = useState('main'); // 'main' or 'map_pick'
   const [showMoreOptions, setShowMoreOptions] = useState(false);
@@ -132,6 +131,20 @@ export default function PlannerSection() {
   const budgetMin = routeState.budgetMin !== undefined ? routeState.budgetMin : 240;
   const transportMode = routeState.transportMode || 'walking';
   const manualPandals = routeState.manualPandals || [];
+  const hasUserInteracted = routeState.hasUserInteracted || false;
+
+  const [gpsLoadTimedOut, setGpsLoadTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!hasUserInteracted || startLocation) {
+      setGpsLoadTimedOut(false);
+      return;
+    }
+    const t = setTimeout(() => setGpsLoadTimedOut(true), 6000);
+    return () => clearTimeout(t);
+  }, [hasUserInteracted, startLocation]);
+
+  const showGpsLoader = hasUserInteracted && !startLocation && !gpsLoadTimedOut;
   
   const [liveCounts, setLiveCounts] = useState({});
   const [errorPandals, setErrorPandals] = useState(null);
@@ -165,7 +178,7 @@ export default function PlannerSection() {
                 manualPandals: selected,
                 transportMode: modeParam || 'walking'
               });
-              setHasUserInteracted(true);
+              updateRouteState({ hasUserInteracted: true });
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }
@@ -190,7 +203,13 @@ export default function PlannerSection() {
     if (plannerTab === 'top' && topN !== null) {
       selectedForCalc = filterTopN(pandalsData, effectiveTopN, startLocation, APP_CONFIG.planner.maxRadiusKm);
     } else if (plannerTab === 'budget' && budgetMin !== null) {
-      selectedForCalc = [...pandalsData].sort((a, b) => (a.popularity ?? 99) - (b.popularity ?? 99));
+      let candidates = pandalsData;
+      if (startLocation && APP_CONFIG.planner.maxRadiusKm) {
+        candidates = candidates.filter(p =>
+          haversineDistance(startLocation, p) <= APP_CONFIG.planner.maxRadiusKm
+        );
+      }
+      selectedForCalc = [...candidates].sort((a, b) => (a.popularity ?? 99) - (b.popularity ?? 99));
     } else if (plannerTab === 'manual') {
       selectedForCalc = manualPandals;
     }
@@ -264,7 +283,7 @@ export default function PlannerSection() {
 
   const handleAddPandal = (pandal) => {
     setPlannerTab('manual');
-    setHasUserInteracted(true);
+    updateRouteState({ hasUserInteracted: true });
     if (!manualPandals.some(p => p.id === pandal.id))
       setManualPandals(prev => [...prev, pandal]);
   };
@@ -283,7 +302,7 @@ export default function PlannerSection() {
     const { value } = await Swal.fire({
       title: t('pl_other_time_title'),
       input: 'number',
-      inputAttributes: { min: 30, max: 720, step: 15 },
+      inputAttributes: { min: 30, max: 720 },
       inputPlaceholder: t('pl_other_time_placeholder'),
       showCancelButton: true,
       confirmButtonText: t('pl_other_time_confirm'),
@@ -291,20 +310,30 @@ export default function PlannerSection() {
       confirmButtonColor: '#8B1E3F',
       cancelButtonColor: '#999',
     });
-    if (value) {
-      const mins = parseInt(value, 10);
-      if (mins >= 30 && mins <= 720) {
-        setBudgetMin(null);
-        setTopN(null);
-        setPlannerTab(null);
-        setHasSelectedTime(false);
-        
-        setBudgetMin(mins);
-        setPlannerTab('budget');
-        setHasSelectedTime(true);
-        setHasUserInteracted(true);
-      }
+
+    if (value === undefined || value === null || value === '') return;
+
+    const mins = parseInt(value, 10);
+    if (isNaN(mins) || mins < 30 || mins > 720) {
+      Swal.fire({
+        icon: 'warning',
+        title: t('pl_other_time_error_title'),
+        text: t('pl_other_time_error_body'),
+        confirmButtonColor: '#8B1E3F',
+        confirmButtonText: t('pl_other_time_confirm'),
+      });
+      return;
     }
+
+    setBudgetMin(null);
+    setTopN(null);
+    setPlannerTab(null);
+    setHasSelectedTime(false);
+    
+    setBudgetMin(mins);
+    setPlannerTab('budget');
+    setHasSelectedTime(true);
+    updateRouteState({ hasUserInteracted: true });
   };
 
   const buildGmapsUrlForBatch = (batchIndex, liveOrigin, startingLoc, mode, state = batchState) => {
@@ -513,7 +542,7 @@ export default function PlannerSection() {
                 setBudgetMin(null);
                 setTopN(null);
                 setHasSelectedTime(false);
-                setHasUserInteracted(false);
+                updateRouteState({ hasUserInteracted: false });
                 setPlannerTab('top');
               }}
               className="text-xs font-bold text-red-700 hover:text-red-900 underline"
@@ -598,6 +627,11 @@ export default function PlannerSection() {
           drawerOpen={drawerState !== 'closed'}
           drawerState={drawerState}
         />
+        {showGpsLoader && (
+          <div className="absolute inset-0 z-[500] bg-white/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
+            <div className="w-10 h-10 rounded-full border-[3px] border-[#8B1E3F]/20 border-t-[#8B1E3F] animate-spin" />
+          </div>
+        )}
         {liveNavState.isNavigating && (
           <LiveNavigationHUD navState={liveNavState} totalStops={optimizedRoute.length} />
         )}
@@ -698,14 +732,14 @@ export default function PlannerSection() {
                         setBudgetMin(null);
                         setHasSelectedTime(false);
                         if (manualPandals.length === 0) {
-                          setHasUserInteracted(false);
+                          updateRouteState({ hasUserInteracted: false });
                           setPlannerTab(null);
                         }
                       } else {
                         setBudgetMin(minutes); 
                         setPlannerTab('budget'); 
                         setHasSelectedTime(true); 
-                        setHasUserInteracted(true); 
+                        updateRouteState({ hasUserInteracted: true }); 
                       }
                     }}
                     className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${
@@ -771,14 +805,14 @@ export default function PlannerSection() {
                                 setTopN(null);
                                 setHasSelectedTime(false);
                                 if (manualPandals.length === 0) {
-                                  setHasUserInteracted(false);
+                                  updateRouteState({ hasUserInteracted: false });
                                   setPlannerTab(null);
                                 }
                               } else {
                                 setTopN(n); 
                                 setPlannerTab('top'); 
                                 setHasSelectedTime(true); 
-                                setHasUserInteracted(true); 
+                                updateRouteState({ hasUserInteracted: true }); 
                               }
                             }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
@@ -840,7 +874,7 @@ export default function PlannerSection() {
                         setPlannerTab('manual');
                         setDrawerState('closed');
                         setIsPickingFromMap(true);
-                        setHasUserInteracted(true);
+                        updateRouteState({ hasUserInteracted: true });
                       }}
                       className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold shadow-md transition-colors ${
                         !isGpsReady
@@ -972,7 +1006,7 @@ export default function PlannerSection() {
           setBudgetMin(null);
           setTopN(null);
           setHasSelectedTime(false);
-          setHasUserInteracted(false);
+          updateRouteState({ hasUserInteracted: false });
           setPlannerTab(null);
           setIsListModalOpen(false);
         }}
