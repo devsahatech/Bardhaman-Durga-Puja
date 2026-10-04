@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { 
+import {
   MapPin, Play, Navigation, X, AlertCircle, List, Compass,
   Footprints, Bike, Car, Trophy, Star, Timer, Infinity as InfinityIcon,
   Clock, Eye, Ruler, Flag, ChevronRight, Moon, ChevronDown, ChevronUp,
@@ -42,36 +42,36 @@ const MapView = dynamic(() => import('./MapView'), {
   ssr: false,
   loading: () => {
     return (
-      
-    <div className="w-full h-full bg-stone-100 animate-pulse flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <MapPin className="w-8 h-8 text-amber-400 animate-bounce" />
-        <span className="text-amber-700 font-medium">Loading map... / ম্যাপ লোড হচ্ছে...</span>
+
+      <div className="w-full h-full bg-stone-100 animate-pulse flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <MapPin className="w-8 h-8 text-amber-400 animate-bounce" />
+          <span className="text-amber-700 font-medium">Loading map... / ম্যাপ লোড হচ্ছে...</span>
+        </div>
       </div>
-    </div>
-  
+
     );
   }
 });
 
 // --- Transport Mode pills ---
 const TRANSPORT_PILLS = [
-  { key: 'walking', Icon: Footprints, label: 'হেঁটে', labelEn: 'Walk', labelBng: 'Walk'  },
-  { key: 'car', Icon: Car,        label: 'গাড়িতে', labelEn: 'Vehicle', labelBng: 'Vehicle' },
+  { key: 'walking', Icon: Footprints, label: 'হেঁটে', labelEn: 'Walk', labelBng: 'Walk' },
+  { key: 'car', Icon: Car, label: 'গাড়িতে', labelEn: 'Vehicle', labelBng: 'Vehicle' },
 ];
 
 const TOP_N_OPTIONS = [
-  { n: 5,    Icon: Trophy, label: 'Top 5'  },
-  { n: 10,   Icon: Star,   label: 'Top 10' },
-  { n: 15,   Icon: Star,   label: 'Top 15' },
-  { n: -1,   Icon: Flag,   label: lang => lang === 'en' ? 'All' : (lang === 'bn' ? 'সব' : 'Sob') },
+  { n: 5, Icon: Trophy, label: 'Top 5' },
+  { n: 10, Icon: Star, label: 'Top 10' },
+  { n: 15, Icon: Star, label: 'Top 15' },
+  { n: -1, Icon: Flag, label: lang => lang === 'en' ? 'All' : (lang === 'bn' ? 'সব' : 'Sob') },
 ];
 
 const BUDGET_OPTIONS = [
-  { minutes: 120,  Icon: Zap,          label: '2 ঘণ্টা', labelEn: '2 hours' },
-  { minutes: 240,  Icon: Timer,        label: '4 ঘণ্টা', labelEn: '4 hours' },
-  { minutes: 360,  Icon: Moon,         label: '6 ঘণ্টা', labelEn: '6 hours' },
-  { minutes: -1,   Icon: InfinityIcon, label: 'সারা দিন', labelEn: 'All day' },
+  { minutes: 120, Icon: Zap, label: '2 ঘণ্টা', labelEn: '2 hours' },
+  { minutes: 240, Icon: Timer, label: '4 ঘণ্টা', labelEn: '4 hours' },
+  { minutes: 360, Icon: Moon, label: '6 ঘণ্টা', labelEn: '6 hours' },
+  { minutes: -1, Icon: InfinityIcon, label: 'সারা দিন', labelEn: 'All day' },
 ];
 
 import { useRoutePersistence } from '../hooks/useRoutePersistence';
@@ -100,7 +100,7 @@ export default function PlannerSection() {
   const [uiMode, setUiMode] = useState('main'); // 'main' or 'map_pick'
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [isListModalOpen, setIsListModalOpen] = useState(false);
-  
+
   const [batchState, setBatchState] = useState(null);
 
   const handleTouchStart = (e) => setTouchStartY(e.touches[0].clientY);
@@ -113,12 +113,12 @@ export default function PlannerSection() {
 
     if (diff > 80) {
       setDrawerState(drawerState === 'expanded' ? 'half'
-                    : drawerState === 'half'     ? 'closed'
-                    : 'closed');
+        : drawerState === 'half' ? 'closed'
+          : 'closed');
     } else if (diff < -80) {
       setDrawerState(drawerState === 'closed' ? 'half'
-                    : drawerState === 'half'   ? 'expanded'
-                    : 'expanded');
+        : drawerState === 'half' ? 'expanded'
+          : 'expanded');
     }
   };
 
@@ -145,7 +145,7 @@ export default function PlannerSection() {
   }, [hasUserInteracted, startLocation]);
 
   const showGpsLoader = hasUserInteracted && !startLocation && !gpsLoadTimedOut;
-  
+
   const [liveCounts, setLiveCounts] = useState({});
   const [errorPandals, setErrorPandals] = useState(null);
 
@@ -195,7 +195,7 @@ export default function PlannerSection() {
     if (!hasUserInteracted) return { optimizedRoute: [], stats: null, trimMessage: null, isPreviewMode: false };
 
     let isPreview = false;
-    
+
     const effectiveTopN = topN === -1 ? null : topN;
     const effectiveBudgetMin = budgetMin === -1 ? null : budgetMin;
 
@@ -262,13 +262,13 @@ export default function PlannerSection() {
     const stops = optimizedRoute
       .filter(p => p.id !== 'END' && p.id !== '__START__')
       .map(p => p.id);
-      
+
     const loadBatchState = async () => {
       if (stops.length <= 10) {
         setBatchState(null);
         return;
       }
-      
+
       const sig = computeRouteSignature(stops);
       const record = await getBatchProgress(sig);
       if (record && record.currentBatchIndex < record.batches.length) {
@@ -277,7 +277,7 @@ export default function PlannerSection() {
         setBatchState(null);
       }
     };
-    
+
     loadBatchState();
   }, [optimizedRoute]);
 
@@ -329,7 +329,7 @@ export default function PlannerSection() {
     setTopN(null);
     setPlannerTab(null);
     setHasSelectedTime(false);
-    
+
     setBudgetMin(mins);
     setPlannerTab('budget');
     setHasSelectedTime(true);
@@ -387,13 +387,13 @@ export default function PlannerSection() {
 
     const originLoc = liveNavState?.userLocation || startLocation || { lat: stops[0].lat, lng: stops[0].lng };
     const mode = transportMode === 'car' ? 'driving' : 'walking';
-    
+
     if (stops.length <= 10) {
       const wp = stops.map(s => `${s.lat},${s.lng}`).join('|');
       const url = `https://www.google.com/maps/dir/?api=1&origin=${originLoc.lat},${originLoc.lng}&destination=${originLoc.lat},${originLoc.lng}${wp ? '&waypoints=' + wp : ''}&travelmode=${mode}`;
       if (typeof window !== 'undefined') window.open(url, '_blank');
       return;
-    } 
+    }
 
     const stopIds = stops.map(s => s.id);
     const batchSize = 10;
@@ -464,11 +464,11 @@ export default function PlannerSection() {
       const updated = { ...batchState, currentBatchIndex: nextIndex, updatedAt: Date.now() };
       await setBatchProgress(batchState.routeSignature, updated);
       setBatchState(updated);
-      
+
       const liveOrigin = liveNavState?.userLocation || null;
       const startingLoc = batchState.startingLoc || null;
       const mode = transportMode === 'car' ? 'driving' : 'walking';
-      
+
       const url = buildGmapsUrlForBatch(nextIndex, liveOrigin, startingLoc, mode, updated);
       if (url && typeof window !== 'undefined') window.open(url, '_blank');
     }
@@ -484,7 +484,7 @@ export default function PlannerSection() {
     const stops = optimizedRoute.filter(p => p.id !== 'END' && p.id !== '__START__');
     const ids = stops.map(s => s.id).join(',');
     const url = `${window.location.origin}/planner?stops=${ids}&mode=${transportMode}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -506,30 +506,30 @@ export default function PlannerSection() {
   const renderSummaryAndChips = () => (
     <div className="w-full">
       {/* Summary Card */}
-      <button 
+      <button
         onClick={() => setIsListModalOpen(true)}
         className="w-full text-left bg-white border-2 border-red-100 hover:border-red-200 rounded-2xl p-4 shadow-sm mt-4 transition-colors"
       >
-         <div className="flex justify-between items-start mb-2">
-           <div className="text-xs text-gray-500 font-semibold"><span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {t('pl_from_your_location')}</span></div>
-           {optimizedRoute.length > 1 && (
-             <div className="text-[10px] text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full">
-               {t('pl_tap_to_view_list')}
-             </div>
-           )}
-         </div>
-         <div className="flex items-center gap-4">
-           <div className="font-extrabold text-red-900 text-lg flex items-center gap-1.5">
-             <MapPin className="w-5 h-5 text-red-700" /> 
-             {optimizedRoute.length > 1 ? (lang === 'en' ? `${optimizedRoute.length - 1} pandals` : `${optimizedRoute.length - 1}টি মণ্ডপ`) : (lang === 'en' ? '0 pandals' : '0টি মণ্ডপ')}
-           </div>
-           {optimizedRoute.length > 1 && stats && (
-             <div className="font-extrabold text-amber-600 text-lg flex items-center gap-1.5">
-               <Clock className="w-5 h-5" /> 
-               ~{lang === 'bn' ? formatDurationBn(stats.totalMin) : formatDuration(stats.totalMin, lang)}
-             </div>
-           )}
-         </div>
+        <div className="flex justify-between items-start mb-2">
+          <div className="text-xs text-gray-500 font-semibold"><span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {t('pl_from_your_location')}</span></div>
+          {optimizedRoute.length > 1 && (
+            <div className="text-[10px] text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full">
+              {t('pl_tap_to_view_list')}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="font-extrabold text-red-900 text-lg flex items-center gap-1.5">
+            <MapPin className="w-5 h-5 text-red-700" />
+            {optimizedRoute.length > 1 ? (lang === 'en' ? `${optimizedRoute.length - 1} pandals` : `${optimizedRoute.length - 1}টি মণ্ডপ`) : (lang === 'en' ? '0 pandals' : '0টি মণ্ডপ')}
+          </div>
+          {optimizedRoute.length > 1 && stats && (
+            <div className="font-extrabold text-amber-600 text-lg flex items-center gap-1.5">
+              <Clock className="w-5 h-5" />
+              ~{lang === 'bn' ? formatDurationBn(stats.totalMin) : formatDuration(stats.totalMin, lang)}
+            </div>
+          )}
+        </div>
       </button>
 
       {/* Clear all */}
@@ -571,7 +571,7 @@ export default function PlannerSection() {
         setTimeout(() => {
           if (!navigator.geolocation) return;
           navigator.geolocation.getCurrentPosition(
-            () => {},
+            () => { },
             () => {
               Swal.fire({
                 title: t('gps_blocked_title'),
@@ -595,7 +595,7 @@ export default function PlannerSection() {
           Location access denied. Enable it in your browser to plan a route from your position.
         </div>
       )}
-      
+
       {errorPandals && (
         <div className="absolute top-0 left-0 right-0 z-[60] bg-orange-600 text-white px-4 py-3 text-center text-sm shadow-md font-medium pt-6">
           {errorPandals}
@@ -607,8 +607,8 @@ export default function PlannerSection() {
         <MapView
           mode={
             liveNavState.isNavigating ? 'navigate'
-            : (hasSelectedTime || isPickingFromMap || manualPandals.length > 0) ? 'plan'
-            : 'discover'
+              : (hasSelectedTime || isPickingFromMap || manualPandals.length > 0) ? 'plan'
+                : 'discover'
           }
           pandalsData={pandalsData}
           selectedRoute={optimizedRoute}
@@ -639,17 +639,15 @@ export default function PlannerSection() {
 
       {/* PLANNER DRAWER */}
       {!liveNavState.isNavigating && (
-        <div 
+        <div
           id="planner-drawer"
-          className={`absolute bottom-0 left-0 right-0 md:relative md:w-[420px] bg-white/97 backdrop-blur-2xl shadow-[0_-12px_48px_rgba(0,0,0,0.12)] z-10 flex flex-col rounded-t-[2rem] md:rounded-none transition-transform duration-300 ease-in-out ${
-            drawerState === 'closed' ? 'translate-y-full' : 'translate-y-0'
-          } ${
-            drawerState === 'expanded' ? 'h-[85vh]' : drawerState === 'half' ? 'h-[45vh]' : 'h-[45vh]'
-          } md:h-full`}
+          className={`absolute bottom-0 left-0 right-0 md:absolute md:top-20 md:bottom-0 md:w-[420px] md:h-auto bg-white/97 backdrop-blur-2xl shadow-[0_-12px_48px_rgba(0,0,0,0.12)] z-10 flex flex-col rounded-t-[2rem] md:rounded-none transition-transform duration-300 ease-in-out ${drawerState === 'closed' ? 'translate-y-full' : 'translate-y-0'
+            } ${drawerState === 'expanded' ? 'h-[85vh]' : drawerState === 'half' ? 'h-[45vh]' : 'h-[45vh]'
+            }`}
         >
 
           {/* Mobile drag handle */}
-          <div 
+          <div
             className="w-full flex justify-center pt-3 pb-4 md:hidden cursor-pointer touch-none"
             onClick={() => setDrawerState('closed')}
             onTouchStart={handleTouchStart}
@@ -662,8 +660,8 @@ export default function PlannerSection() {
           <button
             onClick={() => {
               setDrawerState(drawerState === 'closed' ? 'half'
-                            : drawerState === 'half'   ? 'expanded'
-                            : 'closed');
+                : drawerState === 'half' ? 'expanded'
+                  : 'closed');
             }}
             className="absolute top-3 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 md:hidden"
             aria-label="Expand drawer"
@@ -672,288 +670,281 @@ export default function PlannerSection() {
           </button>
 
           {/* Batch Banner */}
-              {batchState && drawerState !== 'closed' && (
-                <div className="mx-5 mt-3 mb-2">
-                  <div
-                    onClick={() => {
-                      if (batchState.currentBatchIndex < batchState.batches.length - 1) {
-                        handleBatchAdvance();
-                      }
-                    }}
-                    className={`rounded-2xl p-3 flex items-start gap-3 ${
-                      batchState.currentBatchIndex >= batchState.batches.length - 1
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'bg-amber-50 border border-amber-200'
-                    } ${batchState.currentBatchIndex < batchState.batches.length - 1 ? 'cursor-pointer hover:bg-amber-100' : ''}`}
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-gray-900 leading-tight">
-                        {batchState.currentBatchIndex < batchState.batches.length - 1
-                          ? (t('pl_batch_first_done', { n: batchState.batches[batchState.currentBatchIndex].length }))
-                          : (t('pl_batch_almost', { n: batchState.batches[batchState.currentBatchIndex].length }))
-                        }
-                      </p>
-                      <p className="text-[11px] text-gray-500 mt-1">
-                        {t('pl_batch_counter', { current: batchState.currentBatchIndex + 1, total: batchState.batches.length })}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleBatchCancel();
-                      }}
-                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/60 hover:bg-white text-gray-600 shrink-0"
-                      aria-label="Cancel batch"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
+          {batchState && drawerState !== 'closed' && (
+            <div className="mx-5 mt-3 mb-2">
+              <div
+                onClick={() => {
+                  if (batchState.currentBatchIndex < batchState.batches.length - 1) {
+                    handleBatchAdvance();
+                  }
+                }}
+                className={`rounded-2xl p-3 flex items-start gap-3 ${batchState.currentBatchIndex >= batchState.batches.length - 1
+                    ? 'bg-blue-50 border border-blue-200'
+                    : 'bg-amber-50 border border-amber-200'
+                  } ${batchState.currentBatchIndex < batchState.batches.length - 1 ? 'cursor-pointer hover:bg-amber-100' : ''}`}
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900 leading-tight">
+                    {batchState.currentBatchIndex < batchState.batches.length - 1
+                      ? (t('pl_batch_first_done', { n: batchState.batches[batchState.currentBatchIndex].length }))
+                      : (t('pl_batch_almost', { n: batchState.batches[batchState.currentBatchIndex].length }))
+                    }
+                  </p>
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    {t('pl_batch_counter', { current: batchState.currentBatchIndex + 1, total: batchState.batches.length })}
+                  </p>
                 </div>
-              )}
-              
-              <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 space-y-4">
-                
-                {/* Header */}
-              <div>
-                <h2 className="text-2xl font-extrabold text-red-900 leading-tight">{t('route_planner')}</h2>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleBatchCancel();
+                  }}
+                  className="w-7 h-7 flex items-center justify-center rounded-full bg-white/60 hover:bg-white text-gray-600 shrink-0"
+                  aria-label="Cancel batch"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
+            </div>
+          )}
 
-              {/* Time Budget */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {BUDGET_OPTIONS.map(({ minutes, Icon, label, labelEn }) => (
+          <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 space-y-4">
+
+            {/* Header */}
+            <div>
+              <h2 className="text-2xl font-extrabold text-red-900 leading-tight">{t('route_planner')}</h2>
+            </div>
+
+            {/* Time Budget */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {BUDGET_OPTIONS.map(({ minutes, Icon, label, labelEn }) => (
+                <button
+                  key={String(minutes)}
+                  onClick={() => {
+                    if (!isGpsReady) {
+                      showGpsPrompt();
+                      return;
+                    }
+                    if (plannerTab === 'budget' && budgetMin === minutes) {
+                      setBudgetMin(null);
+                      setHasSelectedTime(false);
+                      if (manualPandals.length === 0) {
+                        updateRouteState({ hasUserInteracted: false });
+                        setPlannerTab(null);
+                      }
+                    } else {
+                      setBudgetMin(minutes);
+                      setPlannerTab('budget');
+                      setHasSelectedTime(true);
+                      updateRouteState({ hasUserInteracted: true });
+                    }
+                  }}
+                  className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${!isGpsReady
+                      ? 'opacity-50 grayscale cursor-not-allowed bg-red-50 text-red-700 border border-red-100'
+                      : plannerTab === 'budget' && budgetMin === minutes
+                        ? 'bg-red-700 text-white shadow-md shadow-red-200'
+                        : 'bg-red-50 text-red-700 border border-red-100 hover:bg-red-100'
+                    }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {lang === 'en' ? labelEn : (lang === 'bn' ? label : labelBng)}
+                </button>
+              ))}
+              <button
+                onClick={() => {
+                  if (!isGpsReady) {
+                    showGpsPrompt();
+                    return;
+                  }
+                  handleOtherTime();
+                }}
+                className={`col-span-2 md:col-span-4 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 transition-colors ${!isGpsReady
+                    ? 'opacity-50 grayscale cursor-not-allowed'
+                    : 'hover:border-red-300 hover:bg-red-50 hover:text-red-700'
+                  }`}
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>{t('pl_time_other')}</span>
+              </button>
+            </div>
+
+            {/* More Options */}
+            <div className="bg-transparent mt-2">
+              <button
+                onClick={() => setShowMoreOptions(!showMoreOptions)}
+                className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Settings2 className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-bold text-gray-700">
+                    {t('pl_more_options')}
+                  </span>
+                </div>
+                {showMoreOptions ? <ChevronUp className="w-4 h-4 text-gray-700" /> : <ChevronDown className="w-4 h-4 text-gray-700" />}
+              </button>
+
+              {showMoreOptions && (
+                <div className="px-4 pb-4 space-y-4 border-t border-gray-100 pt-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Top N</p>
+                    <div className="flex gap-2">
+                      {TOP_N_OPTIONS.map(({ n, Icon, label }) => (
+                        <button
+                          key={String(n)}
+                          onClick={() => {
+                            if (!isGpsReady) {
+                              showGpsPrompt();
+                              return;
+                            }
+                            if (plannerTab === 'top' && topN === n) {
+                              setTopN(null);
+                              setHasSelectedTime(false);
+                              if (manualPandals.length === 0) {
+                                updateRouteState({ hasUserInteracted: false });
+                                setPlannerTab(null);
+                              }
+                            } else {
+                              setTopN(n);
+                              setPlannerTab('top');
+                              setHasSelectedTime(true);
+                              updateRouteState({ hasUserInteracted: true });
+                            }
+                          }}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${!isGpsReady
+                              ? 'opacity-50 grayscale cursor-not-allowed bg-white border border-gray-200 text-gray-600'
+                              : plannerTab === 'top' && topN === n
+                                ? 'bg-amber-500 text-white shadow-md'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          {typeof label === 'function' ? label(lang) : label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{t('transport_mode')}</p>
+                    <div className="flex gap-2">
+                      {TRANSPORT_PILLS.map(({ key, Icon, label, labelEn }) => (
+                        <button
+                          key={key}
+                          onClick={() => {
+                            if (!isGpsReady) {
+                              showGpsPrompt();
+                              return;
+                            }
+                            setTransportMode(key);
+                          }}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${!isGpsReady
+                              ? 'opacity-50 grayscale cursor-not-allowed bg-white border border-gray-200 text-gray-600'
+                              : transportMode === key
+                                ? 'bg-red-700 text-white shadow-md'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {lang === 'en' ? labelEn : (lang === 'bn' ? label : labelBng)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <button
-                    key={String(minutes)}
-                    onClick={() => { 
+                    onClick={() => {
                       if (!isGpsReady) {
                         showGpsPrompt();
                         return;
                       }
-                      if (plannerTab === 'budget' && budgetMin === minutes) {
+                      if (plannerTab === 'top' || plannerTab === 'budget') {
+                        setManualPandals([]);
+                        setTopN(null);
                         setBudgetMin(null);
                         setHasSelectedTime(false);
-                        if (manualPandals.length === 0) {
-                          updateRouteState({ hasUserInteracted: false });
-                          setPlannerTab(null);
-                        }
-                      } else {
-                        setBudgetMin(minutes); 
-                        setPlannerTab('budget'); 
-                        setHasSelectedTime(true); 
-                        updateRouteState({ hasUserInteracted: true }); 
                       }
+                      setUiMode('map_pick');
+                      setPlannerTab('manual');
+                      setDrawerState('closed');
+                      setIsPickingFromMap(true);
+                      updateRouteState({ hasUserInteracted: true });
                     }}
-                    className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${
-                      !isGpsReady
-                        ? 'opacity-50 grayscale cursor-not-allowed bg-red-50 text-red-700 border border-red-100'
-                        : plannerTab === 'budget' && budgetMin === minutes
-                          ? 'bg-red-700 text-white shadow-md shadow-red-200'
-                          : 'bg-red-50 text-red-700 border border-red-100 hover:bg-red-100'
-                    }`}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold shadow-md transition-colors ${!isGpsReady
+                        ? 'opacity-50 grayscale cursor-not-allowed bg-gray-800 text-white'
+                        : 'bg-gray-800 text-white hover:bg-gray-900'
+                      }`}
                   >
-                    <Icon className="w-5 h-5" />
-                    {lang === 'en' ? labelEn : (lang === 'bn' ? label : labelBng)}
+                    <MapPin className="w-4 h-4" />
+                    {t('pl_select_from_map')} →
                   </button>
-                ))}
-                <button
-                   onClick={() => {
-                     if (!isGpsReady) {
-                       showGpsPrompt();
-                       return;
-                     }
-                     handleOtherTime();
-                   }}
-                   className={`col-span-2 md:col-span-4 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-white border-2 border-gray-200 text-gray-700 transition-colors ${
-                     !isGpsReady
-                       ? 'opacity-50 grayscale cursor-not-allowed'
-                       : 'hover:border-red-300 hover:bg-red-50 hover:text-red-700'
-                   }`}
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>{t('pl_time_other')}</span>
-                </button>
-              </div>
-
-              {/* More Options */}
-              <div className="bg-transparent mt-2">
-                <button 
-                  onClick={() => setShowMoreOptions(!showMoreOptions)} 
-                  className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Settings2 className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-bold text-gray-700">
-                      {t('pl_more_options')}
-                    </span>
-                  </div>
-                  {showMoreOptions ? <ChevronUp className="w-4 h-4 text-gray-700" /> : <ChevronDown className="w-4 h-4 text-gray-700" />}
-                </button>
-                
-                {showMoreOptions && (
-                  <div className="px-4 pb-4 space-y-4 border-t border-gray-100 pt-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Top N</p>
-                      <div className="flex gap-2">
-                        {TOP_N_OPTIONS.map(({ n, Icon, label }) => (
-                          <button
-                            key={String(n)}
-                            onClick={() => { 
-                              if (!isGpsReady) {
-                                showGpsPrompt();
-                                return;
-                              }
-                              if (plannerTab === 'top' && topN === n) {
-                                setTopN(null);
-                                setHasSelectedTime(false);
-                                if (manualPandals.length === 0) {
-                                  updateRouteState({ hasUserInteracted: false });
-                                  setPlannerTab(null);
-                                }
-                              } else {
-                                setTopN(n); 
-                                setPlannerTab('top'); 
-                                setHasSelectedTime(true); 
-                                updateRouteState({ hasUserInteracted: true }); 
-                              }
-                            }}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                              !isGpsReady
-                                ? 'opacity-50 grayscale cursor-not-allowed bg-white border border-gray-200 text-gray-600'
-                                : plannerTab === 'top' && topN === n
-                                  ? 'bg-amber-500 text-white shadow-md'
-                                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                            }`}
-                          >
-                            <Icon className="w-3.5 h-3.5" />
-                            {typeof label === 'function' ? label(lang) : label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{t('transport_mode')}</p>
-                      <div className="flex gap-2">
-                        {TRANSPORT_PILLS.map(({ key, Icon, label, labelEn }) => (
-                          <button
-                            key={key}
-                            onClick={() => {
-                              if (!isGpsReady) {
-                                showGpsPrompt();
-                                return;
-                              }
-                              setTransportMode(key);
-                            }}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                              !isGpsReady
-                                ? 'opacity-50 grayscale cursor-not-allowed bg-white border border-gray-200 text-gray-600'
-                                : transportMode === key
-                                  ? 'bg-red-700 text-white shadow-md'
-                                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            {lang === 'en' ? labelEn : (lang === 'bn' ? label : labelBng)}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        if (!isGpsReady) {
-                          showGpsPrompt();
-                          return;
-                        }
-                        if (plannerTab === 'top' || plannerTab === 'budget') {
-                          setManualPandals([]);
-                          setTopN(null);
-                          setBudgetMin(null);
-                          setHasSelectedTime(false);
-                        }
-                        setUiMode('map_pick');
-                        setPlannerTab('manual');
-                        setDrawerState('closed');
-                        setIsPickingFromMap(true);
-                        updateRouteState({ hasUserInteracted: true });
-                      }}
-                      className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold shadow-md transition-colors ${
-                        !isGpsReady
-                          ? 'opacity-50 grayscale cursor-not-allowed bg-gray-800 text-white'
-                          : 'bg-gray-800 text-white hover:bg-gray-900'
-                      }`}
-                    >
-                      <MapPin className="w-4 h-4" />
-                      {t('pl_select_from_map')} →
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Summary Card & Actions Gated by Selection */}
-              {!(hasSelectedTime || manualPandals.length > 0 || optimizedRoute.length > 0) ? (
-                <div className="mt-4 p-6 border-2 border-dashed border-gray-200 rounded-2xl text-center bg-gray-50 flex items-center justify-center h-48">
-                  <p className="text-gray-500 font-medium text-sm">{t('pl_time_pick_hint')}</p>
                 </div>
-              ) : (
-                <>
-                  {renderSummaryAndChips()}
-
-                  {/* Primary Actions */}
-                  <div className="space-y-3 pt-2">
-                    <button
-                      onClick={() => {
-                        if (!isGpsReady) {
-                          showGpsPrompt();
-                          return;
-                        }
-                        if (typeof navigator === 'undefined' || !navigator.geolocation) {
-                          Swal.fire({ icon: 'error', title: t('pl_device_error_title'), text: t('pl_device_error_text') });
-                          return;
-                        }
-                        if (optimizedRoute.length > 0) {
-                          if (window.speechSynthesis) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-                          liveNavState.startTour();
-                        }
-                      }}
-                      className={`w-full py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 transition-all ${
-                        !isGpsReady
-                          ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
-                          : optimizedRoute.length <= 1
-                            ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-red-700 to-red-900 text-white shadow-lg shadow-red-900/20 hover:scale-[1.02] active:scale-[0.98]'
-                      }`}
-                    >
-                      {startLocation === null ? (
-                        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {lang === 'en' ? 'Enable GPS' : 'জিপিএস অন করুন'}</span>
-                      ) : (
-                        <><Play className="w-5 h-5 fill-white" /> {t('pl_start_tour')}</>
-                      )}
-                    </button>
-
-                    {optimizedRoute.length > 1 && (
-                      <button
-                        onClick={handleOpenGmaps}
-                        className="w-full py-3 bg-white text-blue-600 border-2 border-blue-100 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                        {t('pl_open_gmaps')}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Share */}
-                  {optimizedRoute.length > 1 && (
-                    <button
-                      onClick={handleShare}
-                      className="w-full py-2 bg-transparent text-gray-500 font-bold flex items-center justify-center gap-2 hover:text-gray-700 transition-colors mt-2"
-                    >
-                      <Share className="w-4 h-4" />
-                      {t('pl_share')}
-                    </button>
-                  )}
-                </>
               )}
             </div>
+
+            {/* Summary Card & Actions Gated by Selection */}
+            {!(hasSelectedTime || manualPandals.length > 0 || optimizedRoute.length > 0) ? (
+              <div className="mt-4 p-6 border-2 border-dashed border-gray-200 rounded-2xl text-center bg-gray-50 flex items-center justify-center h-48">
+                <p className="text-gray-500 font-medium text-sm">{t('pl_time_pick_hint')}</p>
+              </div>
+            ) : (
+              <>
+                {renderSummaryAndChips()}
+
+                {/* Primary Actions */}
+                <div className="space-y-3 pt-2">
+                  <button
+                    onClick={() => {
+                      if (!isGpsReady) {
+                        showGpsPrompt();
+                        return;
+                      }
+                      if (typeof navigator === 'undefined' || !navigator.geolocation) {
+                        Swal.fire({ icon: 'error', title: t('pl_device_error_title'), text: t('pl_device_error_text') });
+                        return;
+                      }
+                      if (optimizedRoute.length > 0) {
+                        if (window.speechSynthesis) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                        liveNavState.startTour();
+                      }
+                    }}
+                    className={`w-full py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 transition-all ${!isGpsReady
+                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
+                        : optimizedRoute.length <= 1
+                          ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white opacity-60 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-red-700 to-red-900 text-white shadow-lg shadow-red-900/20 hover:scale-[1.02] active:scale-[0.98]'
+                      }`}
+                  >
+                    {startLocation === null ? (
+                      <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {lang === 'en' ? 'Enable GPS' : 'জিপিএস অন করুন'}</span>
+                    ) : (
+                      <><Play className="w-5 h-5 fill-white" /> {t('pl_start_tour')}</>
+                    )}
+                  </button>
+
+                  {optimizedRoute.length > 1 && (
+                    <button
+                      onClick={handleOpenGmaps}
+                      className="w-full py-3 bg-white text-blue-600 border-2 border-blue-100 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                      {t('pl_open_gmaps')}
+                    </button>
+                  )}
+                </div>
+
+                {/* Share */}
+                {optimizedRoute.length > 1 && (
+                  <button
+                    onClick={handleShare}
+                    className="w-full py-2 bg-transparent text-gray-500 font-bold flex items-center justify-center gap-2 hover:text-gray-700 transition-colors mt-2"
+                  >
+                    <Share className="w-4 h-4" />
+                    {t('pl_share')}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 

@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { LanguageProvider } from '@/context/LanguageContext';
 import SiteTracker from '@/components/SiteTracker';
 import FeedbackMount from '@/components/FeedbackMount';
+import { Analytics } from '@vercel/analytics/next';
 
 const notoSerifBengali = Noto_Serif_Bengali({
   subsets: ["bengali"],
@@ -95,6 +96,7 @@ export default function RootLayout({ children }) {
         <LanguageProvider>
           <SiteTracker />
           {children}
+          <Analytics />
           <FeedbackMount />
         </LanguageProvider>
       </body>
