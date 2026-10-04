@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { supabase } from '@/lib/supabase';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function FeedbackModal({ isOpen, onClose }) {
   const { t } = useLanguage();
@@ -12,31 +12,38 @@ export default function FeedbackModal({ isOpen, onClose }) {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
+    if (!turnstileToken) return;
 
     setIsSubmitting(true);
     setStatus(null);
 
-    const { error } = await supabase
-      .from('feedback')
-      .insert({
-        category,
-        message,
-        pandal_id: pandalName || null,
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category,
+          message,
+          pandalName: pandalName || null,
+          turnstileToken,
+        }),
       });
 
-    setIsSubmitting(false);
+      if (!res.ok) {
+        setStatus('error');
+        setTurnstileToken('');
+        return;
+      }
 
-    if (error) {
-      console.error(error);
-      setStatus('error');
-    } else {
       setStatus('success');
+      setTurnstileToken('');
       setTimeout(() => {
         onClose();
         setCategory('general');
@@ -44,6 +51,12 @@ export default function FeedbackModal({ isOpen, onClose }) {
         setMessage('');
         setStatus(null);
       }, 2000);
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+      setTurnstileToken('');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,6 +125,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
                     value={pandalName}
                     onChange={(e) => setPandalName(e.target.value)}
                     placeholder={t('feedback_pandal_placeholder')}
+                    maxLength={120}
                     className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
                 </div>
@@ -125,6 +139,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('feedback_message_placeholder')}
+                  maxLength={500}
                   className="w-full min-h-[100px] bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 resize-none outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                 />
               </div>
@@ -134,6 +149,16 @@ export default function FeedbackModal({ isOpen, onClose }) {
                   {t('feedback_error')}
                 </div>
               )}
+
+              <div className="flex justify-center">
+                <Turnstile
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => setTurnstileToken(token)}
+                  onError={() => setTurnstileToken('')}
+                  onExpire={() => setTurnstileToken('')}
+                  options={{ theme: 'light', size: 'flexible' }}
+                />
+              </div>
 
               <div className="flex flex-row gap-3 pt-2">
                 <button
@@ -145,9 +170,9 @@ export default function FeedbackModal({ isOpen, onClose }) {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting || message.length === 0}
+                  disabled={isSubmitting || message.length === 0 || !turnstileToken}
                   className={`w-full md:w-auto flex-1 px-4 py-2.5 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 ${
-                    isSubmitting || message.length === 0 
+                    isSubmitting || message.length === 0 || !turnstileToken
                       ? 'bg-red-700 text-white opacity-50 cursor-not-allowed'
                       : 'bg-red-700 text-white opacity-100 hover:bg-red-800'
                   }`}
