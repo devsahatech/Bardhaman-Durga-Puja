@@ -10,6 +10,7 @@ import ReviewModal from './ReviewModal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { safeStorage } from '@/utils/storage';
 import { haversineDistance } from '../utils/tspSolver';
+import { getPandalPinIcon } from './PandalPin';
 
 // Fix for default Leaflet icon paths in Next.js
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,6 +21,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Custom Orange Icon for Trending Pandals
+// eslint-disable-next-line no-unused-vars
 const trendingIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -42,6 +44,7 @@ const getLivePulseIcon = (heading = 0) => L.divIcon({
   iconAnchor: [48, 48]
 });
 
+// eslint-disable-next-line no-unused-vars
 const routeIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -137,7 +140,9 @@ export default function MapView({
   onOpenPlanner,
   drawerOpen = false,
   drawerState = 'closed',
-  mode = 'discover'
+  mode = 'discover',
+  isGpsReady = true,
+  onRequestGps
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -191,7 +196,6 @@ export default function MapView({
 
   const previewPolyline = useMemo(() => {
     if (isNavigating) return null;
-    if (mode !== 'plan') return null;
     if (!selectedRoute || selectedRoute.length < 2) return null;
 
     const coords = [];
@@ -406,17 +410,17 @@ export default function MapView({
             <Marker 
               key={pandal.id} 
               position={[pandal.lat, pandal.lng]}
-              icon={
-                isAdded ? routeIcon 
-                : pandal.trending === true ? trendingIcon 
-                : new L.Icon.Default()
-              }
+              icon={getPandalPinIcon({
+                state: isAdded ? 'selected' : (pandal.trending === true ? 'trending' : 'default'),
+                index: isAdded ? routeIndex + 1 : 0,
+                zoom: currentZoom
+              })}
             >
               {currentZoom >= 15 && (
                 <Tooltip
                   permanent
                   direction="top"
-                  offset={[0, -34]}
+                  offset={[0, -36]}
                   className="pandal-name-label"
                   opacity={0.95}
                 >
@@ -458,12 +462,24 @@ export default function MapView({
                       {mode === 'plan' && (
                         <>
                           <button 
-                            onClick={() => isAdded && onRemovePandal ? onRemovePandal(pandal.id) : onAddPandal(pandal)}
-                            className={`w-full py-2 rounded-md font-bold flex items-center justify-center gap-1 transition-all ${
-                              isAdded 
-                                ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100' 
-                                : 'bg-red-800 hover:bg-red-900 text-white'
-                            } shadow-sm`}
+                            onClick={() => {
+                              if (isAdded && onRemovePandal) {
+                                onRemovePandal(pandal.id);
+                                return;
+                              }
+                              if (!isGpsReady) {
+                                onRequestGps && onRequestGps();
+                                return;
+                              }
+                              onAddPandal && onAddPandal(pandal);
+                            }}
+                            className={`w-full py-2 rounded-md font-bold flex items-center justify-center gap-1 transition-all shadow-sm ${
+                              !isGpsReady
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : isAdded 
+                                  ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100' 
+                                  : 'bg-red-800 hover:bg-red-900 text-white'
+                            }`}
                           >
                             {isAdded ? t('map_remove_from_route') : t('map_add_to_route')}
                           </button>

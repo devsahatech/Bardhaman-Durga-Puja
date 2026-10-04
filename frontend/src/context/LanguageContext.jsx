@@ -125,10 +125,16 @@ const translations = {
     // Section 6: Support project
     supp_sec_title: "সমর্থন জানান",
     supp_sec_sub: "এই প্রজেক্টটি সম্পূর্ণ ফ্রি",
-    supp_body: "আমরা কোনো বিজ্ঞাপন বা সাবস্ক্রিপশন নেই। যদি এই অ্যাপ আপনার পূজো পরিক্রমায় সাহায্য করে, আপনি চাইলে সামান্য অবদান রাখতে পারেন, যা পরের বছরের সার্ভার খরচ এবং আরও শহরে ছড়িয়ে দিতে কাজে লাগবে।",
+    supp_body: "আমরা কোনো বিজ্ঞাপন বা সাবস্ক্রিপশন নেই। যদি এই উদ্যোগ আপনার পূজো পরিক্রমায় সাহায্য করে, আপনি চাইলে সামান্য অবদান রাখতে পারেন, যা পরের বছরের সার্ভার খরচ এবং আরও শহরে ছড়িয়ে দিতে কাজে লাগবে।",
     supp_qr_scan: "UPI দিয়ে স্ক্যান করুন",
     supp_qr_note: "যেকোনো পরিমাণ, ₹10, ₹50, ₹100",
     supp_qr_soon: "QR কোড শীঘ্রই আসছে",
+    supp_amt_label: "পরিমাণ বাছুন",
+    supp_custom_amt: "নিজের ইচ্ছেমতো পরিমাণ",
+    supp_amt_placeholder: "পরিমাণ লিখুন",
+    supp_pay_button: "UPI দিয়ে ₹{amt} পাঠান",
+    supp_scan_pay: "₹{amt} পাঠাতে স্ক্যান করুন",
+    supp_upi_note: "Google Pay, PhonePe, Paytm সহ সব UPI অ্যাপে কাজ করে",
 
     // Section 7: Emergency numbers
     emerg_sec_title: "জরুরি নম্বর",
@@ -214,7 +220,13 @@ const translations = {
     pl_time_4h: "4 ঘণ্টা",
     pl_time_6h: "6 ঘণ্টা",
     pl_time_allday: "সারা দিন",
-    pl_time_other: "অন্যান্য",
+    pl_time_other: "সময় লিখুন (মিনিট)",
+    pl_other_time_title: "সময় লিখুন (মিনিট)",
+    pl_other_time_placeholder: "৩০ থেকে ৭২০ এর মধ্যে লিখুন",
+    pl_other_time_confirm: "ঠিক আছে",
+    pl_other_time_cancel: "বাতিল",
+    pl_other_time_error_title: "ভুল সময়",
+    pl_other_time_error_body: "৩০ থেকে ৭২০ মিনিটের মধ্যে একটি সংখ্যা লিখুন।",
     pl_more_options: "আরও বিকল্প",
     pl_start_tour: "পরিক্রমা শুরু করুন",
     pl_open_gmaps: "Google Maps-এ খুলুন",
@@ -278,6 +290,12 @@ const translations = {
     hud_next_pandal: "পরবর্তী মণ্ডপ {name}, আর {dist} মিটার",
     feedback_pandal_placeholder: "যেমন: সর্বমঙ্গলা",
     review_submitting: "সাবমিট হচ্ছে...",
+    gps_required_title: 'জিপিএস চালু করুন',
+    gps_required_body: 'এই ফিচারটি ব্যবহার করতে সাইটের লোকেশন পারমিশন দিতে হবে।',
+    gps_required_ok: 'ঠিক আছে',
+    gps_required_cancel: 'বাতিল',
+    gps_blocked_title: 'লোকেশন ব্লক করা আছে',
+    gps_blocked_body: 'আপনার ব্রাউজারে এই সাইটের লোকেশন ব্লক করা আছে। সেটিংস থেকে <b>Location → Allow</b> করে আবার চেষ্টা করুন।',
   },
   en: {
     // Navbar
@@ -401,10 +419,16 @@ const translations = {
     // Section 6: Support project
     supp_sec_title: "Support the Project",
     supp_sec_sub: "This project is 100% free",
-    supp_body: "We take no ads or subscriptions. If this app helps your Puja tour, you can make a small contribution to support server costs and expansion to more cities.",
+    supp_body: "We take no ads or subscriptions. If this initiative helps your Puja tour, you can make a small contribution to support server costs and expansion to more cities.",
     supp_qr_scan: "Scan with any UPI App",
     supp_qr_note: "Any amount, ₹10, ₹50, ₹100",
     supp_qr_soon: "QR Code Coming Soon",
+    supp_amt_label: "Select Amount",
+    supp_custom_amt: "Custom Amount",
+    supp_amt_placeholder: "Enter amount",
+    supp_pay_button: "Pay ₹{amt} via UPI",
+    supp_scan_pay: "Scan to Pay ₹{amt}",
+    supp_upi_note: "Works with Google Pay, PhonePe, Paytm & more",
 
     // Section 7: Emergency numbers
     emerg_sec_title: "Emergency Numbers",
@@ -490,7 +514,13 @@ const translations = {
     pl_time_4h: "4 hours",
     pl_time_6h: "6 hours",
     pl_time_allday: "All day",
-    pl_time_other: "Other",
+    pl_time_other: "Custom Time (minutes)",
+    pl_other_time_title: "Custom Time (minutes)",
+    pl_other_time_placeholder: "Enter a value between 30 and 720",
+    pl_other_time_confirm: "OK",
+    pl_other_time_cancel: "Cancel",
+    pl_other_time_error_title: "Invalid Time",
+    pl_other_time_error_body: "Please enter a number between 30 and 720 minutes.",
     pl_more_options: "More options",
     pl_start_tour: "Start Tour",
     pl_open_gmaps: "Open in Google Maps",
@@ -554,6 +584,12 @@ const translations = {
     hud_next_pandal: "Next pandal {name}, {dist} meters ahead",
     feedback_pandal_placeholder: "e.g. Sarbamangala",
     review_submitting: "Submitting...",
+    gps_required_title: 'Turn on GPS',
+    gps_required_body: 'This feature needs location permission for this site.',
+    gps_required_ok: 'OK',
+    gps_required_cancel: 'Cancel',
+    gps_blocked_title: 'Location is blocked',
+    gps_blocked_body: 'This site\'s location access is blocked in your browser. Open settings, set <b>Location → Allow</b>, and try again.',
   },
   bng: {
     // Navbar
@@ -665,10 +701,16 @@ const translations = {
     // Section 6: Support project
     supp_sec_title: "Somorthon janan",
     supp_sec_sub: "Ei project-ti shompurno free",
-    supp_body: "Amra kono obhiggyan ba subscription nei na. Jodi ei app tomar pujo parikramay shahajjo kore, tumi chaile shamanyo obodan rakhte paro.",
+    supp_body: "Amra kono biggapon ba subscription nei na. Jodi ei initiative tomar pujo parikramay shahajjo kore, tumi chaile shamanyo obodan rakhte paro.",
     supp_qr_scan: "UPI diye scan korun",
     supp_qr_note: "Jekono poriman, ₹10, ₹50, ₹100",
     supp_qr_soon: "QR Code Shighroi Asche",
+    supp_amt_label: "Poriman bachun",
+    supp_custom_amt: "Nijer icchemoto poriman",
+    supp_amt_placeholder: "Poriman likhun",
+    supp_pay_button: "UPI diye ₹{amt} pathan",
+    supp_scan_pay: "₹{amt} pathate scan korun",
+    supp_upi_note: "Google Pay, PhonePe, Paytm shoho shob UPI app-e kaj kore",
 
     // Section 7: Emergency numbers
     emerg_sec_title: "Joruri Number",
@@ -827,6 +869,12 @@ const translations = {
     hud_next_pandal: "Poroborti mondop {name}, ar {dist} meter",
     feedback_pandal_placeholder: "Jemon: Sorbomongola",
     review_submitting: "Submit hochhe...",
+    gps_required_title: 'GPS Chalu Korun',
+    gps_required_body: 'Ei feature use korte site-er location permission dite hobe.',
+    gps_required_ok: 'Thik Ache',
+    gps_required_cancel: 'Cancel',
+    gps_blocked_title: 'Location Block Kora Ache',
+    gps_blocked_body: 'Apnar browser-e ei site-er location block kora ache. Settings theke <b>Location → Allow</b> kore abar chesta korun.',
   }
 };
 

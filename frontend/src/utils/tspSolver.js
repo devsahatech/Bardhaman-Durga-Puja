@@ -182,18 +182,33 @@ export function solveTsp(nodes, mode) {
 }
 
 
-export function filterTopN(pandals, n, userLocation) {
-  // Top-N guarantees best 5 by ranking, completely excluding distance logic.
+export function filterTopN(pandals, n, userLocation, maxRadiusKm = null) {
   let validPandals = pandals.filter(p => typeof p.rank === 'number');
+
+  // Radius filter: only keep pandals within maxRadiusKm of the user
+  if (userLocation && maxRadiusKm) {
+    validPandals = validPandals.filter(p =>
+      haversineDistance(userLocation, p) <= maxRadiusKm
+    );
+  }
+
   validPandals.sort((a, b) => a.rank - b.rank);
   return n ? validPandals.slice(0, n) : validPandals;
 }
 
-export function solveBudget(startNode, pandals, budgetMin, mode) {
+export function solveBudget(startNode, pandals, budgetMin, mode, maxRadiusKm = null) {
   const speedMode = mode === 'cycling' ? 'bike' : mode === 'driving' ? 'car' : 'walking';
   const speed = APP_CONFIG.speeds[speedMode] || 5;
 
-  let unvisited = filterTopN(pandals, null);
+  // Radius filter: only consider pandals within maxRadiusKm of the start node
+  let candidates = pandals;
+  if (startNode && maxRadiusKm) {
+    candidates = pandals.filter(p =>
+      haversineDistance(startNode, p) <= maxRadiusKm
+    );
+  }
+
+  let unvisited = filterTopN(candidates, null, null, null); // rank only, no radius re-filter
   const selected = [];
   let currentPos = startNode;
   

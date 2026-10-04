@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { supabase } from '@/lib/supabase';
 
 export default function FeedbackModal({ isOpen, onClose }) {
   const { t } = useLanguage();
@@ -12,31 +11,124 @@ export default function FeedbackModal({ isOpen, onClose }) {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
+  const turnstileContainerRef = useRef(null);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.turnstile) {
+      setTurnstileLoaded(true);
+      return;
+    }
+
+    const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+    if (existing) {
+      if (window.turnstile) {
+        setTurnstileLoaded(true);
+      } else {
+        existing.addEventListener('load', () => setTurnstileLoaded(true));
+      }
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setTurnstileLoaded(true);
+    script.onerror = () => console.error('Turnstile script failed to load');
+    document.head.appendChild(script);
+
+    return () => setTurnstileLoaded(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!turnstileLoaded || !window.turnstile) return;
+
+    // Wait one tick for the container to mount
+    const timer = setTimeout(() => {
+      const container = turnstileContainerRef.current;
+      if (!container) return;
+      if (container.hasChildNodes()) {
+        // Widget already rendered; reset it for a fresh challenge
+        try {
+          window.turnstile.reset(container);
+        } catch (e) {
+          // ignore
+        }
+        return;
+      }
+
+      const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      if (!siteKey) {
+        console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing');
+        return;
+      }
+
+      try {
+        window.turnstile.render(container, {
+          sitekey: siteKey,
+          theme: 'light',
+          size: 'flexible',
+          callback: (token) => setTurnstileToken(token),
+          'error-callback': () => setTurnstileToken(''),
+          'expired-callback': () => setTurnstileToken(''),
+        });
+      } catch (err) {
+        console.error('Turnstile render failed:', err);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [turnstileLoaded, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
+    if (!turnstileToken) return;
 
     setIsSubmitting(true);
     setStatus(null);
 
-    const { error } = await supabase
-      .from('feedback')
-      .insert({
-        category,
-        message,
-        pandal_id: pandalName || null,
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category,
+          message,
+          pandalName: pandalName || null,
+          turnstileToken,
+        }),
       });
 
-    setIsSubmitting(false);
+      if (!res.ok) {
+        setStatus('error');
+        setTurnstileToken('');
+        if (window.turnstile && turnstileContainerRef.current) {
+          try {
+            window.turnstile.reset(turnstileContainerRef.current);
+          } catch (e) {
+            // ignore
+          }
+        }
+        return;
+      }
 
-    if (error) {
-      console.error(error);
-      setStatus('error');
-    } else {
       setStatus('success');
+      setTurnstileToken('');
+      if (window.turnstile && turnstileContainerRef.current) {
+        try {
+          window.turnstile.reset(turnstileContainerRef.current);
+        } catch (e) {
+          // ignore
+        }
+      }
       setTimeout(() => {
         onClose();
         setCategory('general');
@@ -44,6 +136,19 @@ export default function FeedbackModal({ isOpen, onClose }) {
         setMessage('');
         setStatus(null);
       }, 2000);
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+      setTurnstileToken('');
+      if (window.turnstile && turnstileContainerRef.current) {
+        try {
+          window.turnstile.reset(turnstileContainerRef.current);
+        } catch (e) {
+          // ignore
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,6 +217,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
                     value={pandalName}
                     onChange={(e) => setPandalName(e.target.value)}
                     placeholder={t('feedback_pandal_placeholder')}
+                    maxLength={120}
                     className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
                 </div>
@@ -125,6 +231,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('feedback_message_placeholder')}
+                  maxLength={500}
                   className="w-full min-h-[100px] bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 resize-none outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                 />
               </div>
@@ -134,6 +241,10 @@ export default function FeedbackModal({ isOpen, onClose }) {
                   {t('feedback_error')}
                 </div>
               )}
+
+              <div className="flex justify-center">
+                <div ref={turnstileContainerRef} />
+              </div>
 
               <div className="flex flex-row gap-3 pt-2">
                 <button
@@ -145,9 +256,9 @@ export default function FeedbackModal({ isOpen, onClose }) {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting || message.length === 0}
+                  disabled={isSubmitting || message.length === 0 || !turnstileToken}
                   className={`w-full md:w-auto flex-1 px-4 py-2.5 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 ${
-                    isSubmitting || message.length === 0 
+                    isSubmitting || message.length === 0 || !turnstileToken
                       ? 'bg-red-700 text-white opacity-50 cursor-not-allowed'
                       : 'bg-red-700 text-white opacity-100 hover:bg-red-800'
                   }`}
