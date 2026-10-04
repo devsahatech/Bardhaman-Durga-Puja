@@ -8,27 +8,27 @@ import SectionCornerPatterns from './SectionCornerPatterns';
 import SectionDivider from './SectionDivider';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 
-export default function CitiesCovered() {
+export default function CitiesCovered({ pandalCounts = {} }) {
   const { t } = useLanguage();
 
   const cities = [
     {
       nameKey: 'city1_name',
-      countKey: 'city1_count',
+      cityName: 'Bardhaman',
       statusKey: 'city1_status',
       href: '/planner?city=bardhaman',
       available: true,
     },
     {
       nameKey: 'city2_name',
-      countKey: 'city2_count',
+      cityName: 'Katwa',
       statusKey: 'city2_status',
       href: '/planner?city=katwa',
       available: true,
     },
     {
       nameKey: 'city3_name',
-      countKey: 'city3_count',
+      cityName: 'Kolkata',
       statusKey: 'city3_status',
       href: '#',
       available: false,
@@ -80,7 +80,9 @@ export default function CitiesCovered() {
                     </span>
                   </div>
                   <p className="text-[#5A524A] font-medium text-sm sm:text-base pl-1">
-                    {t(city.countKey)}
+                    {city.available && pandalCounts[city.cityName]
+                      ? t('city_pandal_count', { count: pandalCounts[city.cityName] })
+                      : t(city.statusKey)}
                   </p>
                 </div>
 
