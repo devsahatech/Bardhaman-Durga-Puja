@@ -196,7 +196,6 @@ export default function MapView({
 
   const previewPolyline = useMemo(() => {
     if (isNavigating) return null;
-    if (mode !== 'plan') return null;
     if (!selectedRoute || selectedRoute.length < 2) return null;
 
     const coords = [];
