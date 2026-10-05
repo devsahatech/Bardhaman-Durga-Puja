@@ -33,6 +33,8 @@ import { getPandalCounts } from '@/lib/getPandalCounts';
 
 export default function Home() {
   const pandalCounts = getPandalCounts();
+  const totalPandals = Object.values(pandalCounts).reduce((sum, count) => sum + count, 0);
+
   return (
     <main className="min-h-screen bg-[#FAF6EE] text-[#1F1B16] font-sans antialiased">
       {/* Navigation Bar */}
@@ -40,7 +42,7 @@ export default function Home() {
 
       {/* Main Landing Sections (Strict Order 1-8) */}
       <div className="pt-16 md:pt-20">
-        <HeroSection />
+        <HeroSection totalPandals={totalPandals} />
         <FeatureCards />
         <HowItWorksSection />
         <WhyCholoPujo />
