@@ -7,7 +7,7 @@ import { ArrowRight, ArrowDown, Landmark, MapPin, Mic } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 
-export default function HeroSection() {
+export default function HeroSection({ totalPandals = 23 }) {
   const { t, lang } = useLanguage();
 
   return (
@@ -135,7 +135,7 @@ export default function HeroSection() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 text-center">
                   <Landmark className="w-4 h-4 text-[#8B1E3F] shrink-0" />
                   <span className="text-[10px] xs:text-[11px] sm:text-sm font-bold sm:font-semibold text-[#1F1B16] leading-tight">
-                    {t('hero_stat_pandals')}
+                    {t('hero_stat_pandals', { count: totalPandals })}
                   </span>
                 </div>
                 
